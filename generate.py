@@ -1,15 +1,14 @@
 #!/usr/bin/env python3 -u
 """
-InfoGram Daily Post Generator v4 (Gemini Free Tier)
+InfoGram Daily Post Generator v5 (GitHub Models — 100% Free)
 
-v4 fixes:
-- FORCE UNBUFFERED OUTPUT (this is why v3 showed no logs in GitHub Actions)
-- Shorter API timeout (30s instead of 120s) so failed calls don't hang
-- sys.stdout.flush() after every print
-- No google_search grounding (caused all 429s)
-- Batch generation: 3 batches of 10 with 60s cooldown
+Uses GitHub's free AI Models API:
+- Model: gpt-4o-mini (free tier)
+- Rate limit: 150 requests/day, 15 requests/min
+- Auth: Built-in GITHUB_TOKEN — no extra API key needed
+- We use: 10 requests/day, well within limits
 
-Usage: GEMINI_API_KEY=AIza... python -u generate.py
+Usage: python -u generate.py
 """
 
 import json, os, sys, time, random, hashlib
@@ -17,23 +16,21 @@ from datetime import datetime, date
 from pathlib import Path
 import urllib.request, urllib.error
 
-# CRITICAL: Force unbuffered stdout so GitHub Actions shows output in real time
 sys.stdout.reconfigure(line_buffering=True)
 
 def log(msg):
-    """Print with guaranteed flush."""
     print(msg)
     sys.stdout.flush()
 
-API_KEY = os.environ.get("GEMINI_API_KEY", "")
-MODEL = "gemini-2.0-flash"
+# GitHub Models uses the built-in GITHUB_TOKEN
+TOKEN = os.environ.get("GITHUB_TOKEN", "")
+MODEL = "gpt-4o-mini"
+API_URL = "https://models.inference.ai.azure.com/chat/completions"
 POSTS_DIR = Path("posts")
-NUM_POSTS = 10
+NUM_POSTS = 30
 MAX_RETRIES = 3
-BATCH_SIZE = 10
-BATCH_COOLDOWN = 0
-API_TIMEOUT = 30
-REQUEST_DELAY = 10  # 10 seconds between each request — very safe for tight quotas
+REQUEST_DELAY = 8  # seconds between requests
+API_TIMEOUT = 60
 
 TOPICS = [
     {"id":"ai","label":"Artificial Intelligence","category":"AI & Computing"},
@@ -206,7 +203,7 @@ IMG_QUERIES = {
 PROMPT_TEMPLATES = [
     "Explain the most fundamental concept in {label}. What must every beginner understand first? Include real-world examples and actual numbers.",
     "What is the most counterintuitive or mind-blowing fact about {label}? Explain why it defies common sense with the science/math behind it.",
-    "How is {label} changing RIGHT NOW in 2025-2026? Cover the latest breakthroughs, trends, and expert predictions. Be specific with names and numbers.",
+    "How is {label} evolving in 2025-2026? Cover the latest breakthroughs, trends, and expert predictions. Be specific with names and numbers.",
     "What is the most important formula, equation, or principle in {label}? Derive it from first principles and show a practical worked example.",
     "What is the biggest unsolved mystery or open debate in {label}? Why hasn't it been solved? What are the competing theories?",
     "Tell the story of the most important breakthrough in {label} history. Who did it, what obstacles, and why does it still matter today?",
@@ -219,31 +216,40 @@ def daily_seed():
     return int(hashlib.md5(str(date.today()).encode()).hexdigest()[:8], 16)
 
 
-def pick_topics_and_prompts(n=30):
+def pick_topics_and_prompts(n):
     rng = random.Random(daily_seed())
     by_cat = {}
     for t in TOPICS:
         by_cat.setdefault(t["category"], []).append(t)
-    selections = []
+
+    # Pick one from each category first, then shuffle and take n
+    pool = []
     for cat, topics in by_cat.items():
         topic = rng.choice(topics)
         prompt = rng.choice(PROMPT_TEMPLATES).format(**topic)
-        selections.append((topic, prompt))
-    used = {(s[0]["id"], s[1][:50]) for s in selections}
+        pool.append((topic, prompt))
+
+    rng.shuffle(pool)
+    # If n < number of categories, just take first n from shuffled pool
+    if n <= len(pool):
+        return pool[:n]
+
+    # Otherwise fill remaining with random picks
+    used = {(s[0]["id"], s[1][:50]) for s in pool}
     all_topics = list(TOPICS)
     rng.shuffle(all_topics)
     idx = 0
-    while len(selections) < n:
+    while len(pool) < n:
         topic = all_topics[idx % len(all_topics)]
         prompt = rng.choice(PROMPT_TEMPLATES).format(**topic)
         key = (topic["id"], prompt[:50])
         if key not in used:
-            selections.append((topic, prompt))
+            pool.append((topic, prompt))
             used.add(key)
         idx += 1
         if idx > n * 5:
             break
-    return selections[:n]
+    return pool[:n]
 
 
 def make_image_url(topic_id, title):
@@ -252,8 +258,8 @@ def make_image_url(topic_id, title):
     return f"https://source.unsplash.com/800x450/?{query}&sig={sig}"
 
 
-def call_gemini(topic, prompt):
-    """Call Gemini API. No grounding tools. Short timeout."""
+def call_api(topic, prompt):
+    """Call GitHub Models API (OpenAI-compatible endpoint)."""
 
     user_prompt = f"""You are a brilliant knowledge content creator for InfoGram, an addictive learning feed. Create an in-depth educational article.
 
@@ -267,7 +273,7 @@ REQUIREMENTS:
 - Hook the reader in the first sentence
 - Write as if you have the latest 2025 knowledge
 
-Respond ONLY with valid JSON, no markdown fences:
+Respond ONLY with valid JSON, no markdown fences, no extra text:
 {{
   "title": "Catchy specific headline, max 10 words",
   "content": "Full 600-1000 word article. Use ## for section headers. Use **bold** for key terms. Use `backtick` for formulas/values. Use [FORMULA] ... [/FORMULA] for standalone equations. Use [INSIGHT] ... [/INSIGHT] for 1-2 key takeaways.",
@@ -276,31 +282,30 @@ Respond ONLY with valid JSON, no markdown fences:
 }}"""
 
     body = json.dumps({
-        "contents": [{"parts": [{"text": user_prompt}]}],
-        "generationConfig": {
-            "temperature": 0.9,
-            "maxOutputTokens": 4096,
-            "responseMimeType": "application/json",
-        },
+        "model": MODEL,
+        "messages": [
+            {"role": "system", "content": "You are a knowledge content creator. Always respond with valid JSON only."},
+            {"role": "user", "content": user_prompt}
+        ],
+        "temperature": 0.9,
+        "max_tokens": 4096,
     }).encode()
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent?key={API_KEY}"
+    req = urllib.request.Request(
+        API_URL,
+        data=body,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {TOKEN}",
+        },
+    )
 
-    req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"})
     resp = urllib.request.urlopen(req, timeout=API_TIMEOUT)
     data = json.loads(resp.read())
 
-    candidates = data.get("candidates", [])
-    if not candidates:
-        raise ValueError(f"No candidates: {json.dumps(data)[:300]}")
+    text = data["choices"][0]["message"]["content"].strip()
 
-    parts = candidates[0].get("content", {}).get("parts", [])
-    text = ""
-    for part in parts:
-        if "text" in part:
-            text += part["text"]
-
-    text = text.strip()
+    # Clean markdown fences if present
     for prefix in ["```json", "```"]:
         if text.startswith(prefix):
             text = text[len(prefix):]
@@ -314,7 +319,7 @@ def generate_post(topic, prompt, index):
     for attempt in range(MAX_RETRIES):
         try:
             log(f"  [{index+1}/{NUM_POSTS}] {topic['label']}: {prompt[:55]}...")
-            result = call_gemini(topic, prompt)
+            result = call_api(topic, prompt)
 
             post_id = hashlib.md5(
                 f"{date.today()}-{topic['id']}-{prompt[:30]}".encode()
@@ -332,82 +337,80 @@ def generate_post(topic, prompt, index):
             return result
 
         except urllib.error.HTTPError as e:
-            log(f"    ✗ Attempt {attempt+1}: HTTP {e.code}")
-            if e.code == 429 and attempt < MAX_RETRIES - 1:
-                wait = 30 * (attempt + 1)
-                log(f"    ⏳ Rate limited. Waiting {wait}s...")
+            body = ""
+            try:
+                body = e.read().decode()[:200]
+            except:
+                pass
+            log(f"    ✗ Attempt {attempt+1}: HTTP {e.code} — {body}")
+            if attempt < MAX_RETRIES - 1:
+                wait = 15 * (attempt + 1)
+                log(f"    ⏳ Waiting {wait}s...")
                 time.sleep(wait)
-            elif attempt < MAX_RETRIES - 1:
-                time.sleep(5)
-            else:
-                log(f"    ✗ All {MAX_RETRIES} attempts failed")
 
         except Exception as e:
             log(f"    ✗ Attempt {attempt+1}: {type(e).__name__}: {e}")
             if attempt < MAX_RETRIES - 1:
-                time.sleep(5)
-            else:
-                log(f"    ✗ All {MAX_RETRIES} attempts failed")
+                time.sleep(10)
+
+    log(f"    ✗ All {MAX_RETRIES} attempts failed")
     return None
 
 
 def main():
     log("=" * 50)
-    log("InfoGram Generator v4")
+    log("InfoGram Generator v5 (GitHub Models)")
     log("=" * 50)
 
-    if not API_KEY:
-        log("ERROR: GEMINI_API_KEY not set")
-        log("Get free key: https://aistudio.google.com/apikey")
+    if not TOKEN:
+        log("ERROR: GITHUB_TOKEN not available")
+        log("This should be automatic in GitHub Actions")
         sys.exit(1)
 
-    log(f"API Key: {API_KEY[:8]}...{API_KEY[-4:]}")
+    log(f"Token: {TOKEN[:8]}...{TOKEN[-4:]}")
     log(f"Model: {MODEL}")
+    log(f"API: {API_URL}")
     log(f"Date: {date.today()}")
-    log(f"Posts: {NUM_POSTS}")
-    log(f"Batches: {NUM_POSTS // BATCH_SIZE} x {BATCH_SIZE}")
-    log(f"Timeout per request: {API_TIMEOUT}s")
+    log(f"Articles: {NUM_POSTS}")
+    log(f"Delay: {REQUEST_DELAY}s between requests")
     log("")
 
-    POSTS_DIR.mkdir(exist_ok=True)
-
-    # Quick API test first
+    # Quick API test
     log("Testing API connection...")
     try:
-        test_url = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}?key={API_KEY}"
-        test_req = urllib.request.Request(test_url)
-        test_resp = urllib.request.urlopen(test_req, timeout=10)
-        log(f"  ✓ API connected (status {test_resp.status})")
+        test_body = json.dumps({
+            "model": MODEL,
+            "messages": [{"role": "user", "content": "Say hello in 3 words"}],
+            "max_tokens": 20,
+        }).encode()
+        test_req = urllib.request.Request(
+            API_URL, data=test_body,
+            headers={"Content-Type": "application/json", "Authorization": f"Bearer {TOKEN}"}
+        )
+        test_resp = urllib.request.urlopen(test_req, timeout=15)
+        test_data = json.loads(test_resp.read())
+        test_text = test_data["choices"][0]["message"]["content"]
+        log(f"  ✓ API works! Response: \"{test_text.strip()}\"")
     except Exception as e:
-        log(f"  ✗ API connection failed: {e}")
-        log("  Check your GEMINI_API_KEY secret")
+        log(f"  ✗ API test failed: {e}")
+        log("  GitHub Models may not be available for your account")
         sys.exit(1)
 
     log("")
+    POSTS_DIR.mkdir(exist_ok=True)
     selections = pick_topics_and_prompts(NUM_POSTS)
     posts = []
     failed = 0
 
-    for batch_num in range(0, len(selections), BATCH_SIZE):
-        batch = selections[batch_num:batch_num + BATCH_SIZE]
-        batch_idx = batch_num // BATCH_SIZE + 1
-        total_batches = (len(selections) + BATCH_SIZE - 1) // BATCH_SIZE
-
-        log(f"── Batch {batch_idx}/{total_batches} ({len(batch)} articles) ──")
-
-        for i, (topic, prompt) in enumerate(batch):
-            post = generate_post(topic, prompt, batch_num + i)
-            if post:
-                posts.append(post)
-            else:
-                failed += 1
-            if i < len(batch) - 1:
-                log(f"    ⏳ Waiting {REQUEST_DELAY}s before next...")
-                time.sleep(REQUEST_DELAY)
-
-        if batch_num + BATCH_SIZE < len(selections):
-            log(f"  ⏸️  Cooling down {BATCH_COOLDOWN}s...")
-            time.sleep(BATCH_COOLDOWN)
+    for i, (topic, prompt) in enumerate(selections):
+        post = generate_post(topic, prompt, i)
+        if post:
+            posts.append(post)
+        else:
+            failed += 1
+        if i < len(selections) - 1:
+            log(f"    ⏳ Waiting {REQUEST_DELAY}s...")
+            time.sleep(REQUEST_DELAY)
 
     output_path = POSTS_DIR / f"{date.today()}.json"
     with open(output_path, "w") as f:
@@ -417,7 +420,7 @@ def main():
     log("=" * 50)
     log(f"✅ Done! {len(posts)} articles, {failed} failed")
     log(f"📁 {output_path}")
-    log(f"💰 Cost: $0.00")
+    log(f"💰 Cost: $0.00 (GitHub Models free)")
 
     cats = {}
     for p in posts:
@@ -433,7 +436,7 @@ def main():
     if len(posts) == 0:
         log("\n❌ FATAL: Zero posts generated!")
         sys.exit(1)
-    if failed > 10:
+    if failed > 5:
         log(f"\n⚠️  {failed} failures")
         sys.exit(1)
 
