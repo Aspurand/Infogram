@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="InfoGram">
+<meta name="theme-color" content="#0a0a0f">
+<title>InfoGram</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0f;--bg-card:#13131a;--bg-card-hover:#1a1a24;--bg-input:#1a1a24;
+  --border:#2a2a3a;--text:#e8e8f0;--text-dim:#7a7a90;--text-muted:#4a4a5a;
+  --accent:#6c5ce7;--accent-glow:rgba(108,92,231,0.3);
+  --green:#00d2a0;--red:#ff6b6b;--amber:#ffd43b;--blue:#4dabf7;
+  --pink:#f06595;--orange:#ff922b;--cyan:#22b8cf;
+  --radius:14px;--radius-sm:10px;
+  --header-h:56px;--nav-h:64px;
+  --safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
+html,body{height:100%;overflow:hidden}
+body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5}
+::-webkit-scrollbar{display:none}*{scrollbar-width:none}
+#app{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+
+/* ── AUTH SCREEN ── */
+.auth-screen{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 28px;text-align:center}
+.auth-logo{font-size:56px;margin-bottom:14px;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.auth-title{font-size:34px;font-weight:800;letter-spacing:-1px;margin-bottom:4px;background:linear-gradient(135deg,#6c5ce7,#a29bfe 50%,#00d2a0);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.auth-sub{font-size:14px;color:var(--text-dim);margin-bottom:32px;line-height:1.5}
+.auth-form{width:100%;max-width:340px}
+.auth-input{width:100%;padding:14px 18px;background:var(--bg-card);border:1.5px solid var(--border);border-radius:12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;outline:none;transition:border-color 0.2s;margin-bottom:12px;-webkit-appearance:none}
+.auth-input:focus{border-color:var(--accent)}
+.auth-input::placeholder{color:var(--text-muted)}
+.auth-btn{width:100%;padding:15px;border:none;border-radius:50px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);color:white;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all 0.3s;box-shadow:0 4px 24px var(--accent-glow);margin-top:4px}
+.auth-btn:active{transform:scale(0.97)}
+.auth-btn:disabled{opacity:0.4;cursor:default;transform:none}
+.auth-toggle{margin-top:18px;font-size:13px;color:var(--text-dim)}
+.auth-toggle span{color:var(--accent);cursor:pointer;font-weight:600}
+.auth-error{color:var(--red);font-size:13px;margin-bottom:10px;min-height:18px}
+.auth-user-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 14px 5px 8px;border-radius:20px;background:var(--bg-card);border:1px solid var(--border);font-size:13px;color:var(--text-dim);cursor:pointer;transition:all 0.2s}
+.auth-user-pill:active{background:var(--bg-card-hover)}
+.auth-user-pill .avatar-sm{width:22px;height:22px;border-radius:50%;background:var(--accent);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+
+/* ── HEADER ── */
+.header{flex-shrink:0;display:flex;justify-content:space-between;align-items:center;padding:0 16px;height:calc(var(--header-h) + var(--safe-top));padding-top:var(--safe-top);background:rgba(10,10,15,0.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,0.06);position:relative;z-index:50}
+.header-left{display:flex;align-items:center;gap:10px}
+.logo-icon{font-size:24px}
+.header-left h1{font-size:21px;font-weight:800;letter-spacing:-0.5px;background:linear-gradient(135deg,#e8e8f0 30%,#6c5ce7 70%,#a29bfe);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header-right{display:flex;gap:8px;align-items:center}
+.hdr-btn{height:34px;border-radius:10px;background:var(--bg-card);border:1px solid var(--border);color:var(--text-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:all 0.2s;padding:0 12px;gap:6px;font-family:'DM Sans',sans-serif;font-weight:600}
+.hdr-btn:active{background:var(--bg-card-hover);transform:scale(0.94)}
+.hdr-avatar{width:28px;height:28px;border-radius:50%;background:var(--accent);color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{flex-shrink:0;display:flex;justify-content:space-around;align-items:center;height:calc(var(--nav-h) + var(--safe-bottom));padding-bottom:var(--safe-bottom);background:rgba(10,10,15,0.96);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid rgba(255,255,255,0.06);z-index:50}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 14px;cursor:pointer;transition:all 0.2s;border-radius:12px;position:relative}
+.nav-item:active{transform:scale(0.9)}
+.nav-icon{font-size:22px;transition:all 0.2s}
+.nav-label{font-size:10px;font-weight:600;color:var(--text-muted);transition:all 0.2s;letter-spacing:0.3px}
+.nav-item.active .nav-icon{transform:scale(1.15)}
+.nav-item.active .nav-label{color:var(--accent)}
+.nav-item.active::after{content:'';position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:20px;height:3px;border-radius:2px;background:var(--accent)}
+.saved-count{position:absolute;top:0;right:4px;min-width:16px;height:16px;border-radius:8px;background:var(--pink);color:white;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px}
+
+.main{flex:1;overflow:hidden;position:relative}
+
+/* ── REELS ── */
+.reels-container{height:100%;overflow:hidden;position:relative;touch-action:pan-y}
+.reel-slide{height:100%;width:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;position:absolute;top:0;left:0;display:flex;flex-direction:column;transition:transform 0.3s ease,opacity 0.3s ease}
+.reel-slide::-webkit-scrollbar{display:none}
+.reel-slide.slide-out-left{transform:translateX(-100%);opacity:0}
+.reel-slide.slide-out-right{transform:translateX(100%);opacity:0}
+.reel-slide.slide-in-left{animation:slideFromRight 0.3s ease forwards}
+.reel-slide.slide-in-right{animation:slideFromLeft 0.3s ease forwards}
+@keyframes slideFromRight{from{transform:translateX(60px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes slideFromLeft{from{transform:translateX(-60px);opacity:0}to{transform:translateX(0);opacity:1}}
+.reel-content{flex:1;padding:20px 18px 24px;display:flex;flex-direction:column;min-height:100%}
+.reel-topic-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.reel-topic-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.reel-topic-name{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px}
+.reel-topic-meta{font-size:11px;color:var(--text-dim);margin-top:2px}
+.reel-difficulty{margin-left:auto;padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
+.reel-title{font-size:24px;font-weight:800;line-height:1.25;letter-spacing:-0.5px;margin-bottom:16px}
+.reel-hero-image{width:calc(100% + 36px);margin-left:-18px;margin-bottom:18px;height:220px;object-fit:cover;border-radius:0;background:linear-gradient(135deg,var(--bg-card),#1a1a2e)}
+.reel-body{flex:1}
+.reel-body p{margin-bottom:14px;font-size:15px;line-height:1.8;color:rgba(232,232,240,0.84)}
+.reel-body h3{font-size:17px;font-weight:700;color:var(--text);margin:24px 0 10px;padding-left:12px;border-left:3px solid var(--accent)}
+.reel-body strong{color:var(--text);font-weight:600}
+.reel-body code{background:rgba(108,92,231,0.12);padding:2px 7px;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent);border:1px solid rgba(108,92,231,0.15)}
+.reel-body .formula-block{background:rgba(108,92,231,0.06);border:1px solid rgba(108,92,231,0.15);border-radius:10px;padding:16px 18px;margin:16px 0;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--accent);line-height:1.9;overflow-x:auto}
+.reel-body .key-insight{background:linear-gradient(135deg,rgba(0,210,160,0.08),rgba(0,210,160,0.03));border:1px solid rgba(0,210,160,0.2);border-radius:10px;padding:16px 18px;margin:16px 0;font-size:14px;line-height:1.7}
+.reel-body .key-insight::before{content:'💡 Key Insight';display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--green);margin-bottom:8px}
+
+.reel-actions{position:fixed;right:14px;bottom:calc(var(--nav-h) + var(--safe-bottom) + 20px);display:flex;flex-direction:column;gap:20px;z-index:40;align-items:center}
+.reel-action-btn{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:all 0.2s}
+.reel-action-btn:active{transform:scale(0.85)}
+.reel-action-icon{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,0.1);backdrop-filter:blur(16px);display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid rgba(255,255,255,0.08);transition:all 0.3s}
+.reel-action-icon.liked{background:rgba(255,107,107,0.2);border-color:rgba(255,107,107,0.3)}
+.reel-action-icon.saved{background:rgba(253,203,107,0.2);border-color:rgba(253,203,107,0.3)}
+.reel-action-label{font-size:10px;font-weight:600;color:rgba(255,255,255,0.5)}
+
+.swipe-hint{position:fixed;bottom:calc(var(--nav-h) + var(--safe-bottom) + 8px);left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;animation:bounceHint 2s ease infinite;z-index:30;pointer-events:none}
+.swipe-hint-text{font-size:11px;color:rgba(255,255,255,0.25);font-weight:500}
+@keyframes bounceHint{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-8px)}}
+
+.progress-bar{position:fixed;top:calc(var(--header-h) + var(--safe-top) + 8px);left:16px;right:16px;display:flex;gap:4px;z-index:40}
+.progress-seg{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,0.1);overflow:hidden;min-width:4px}
+.progress-seg.done{background:var(--accent)}
+.progress-seg.active .pfill{height:100%;background:var(--accent);border-radius:2px;animation:pgrow 15s linear forwards}
+@keyframes pgrow{from{width:0}to{width:100%}}
+
+.page-container{height:100%;overflow-y:auto;padding:16px}
+.page-container::-webkit-scrollbar{display:none}
+.section-title{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px}
+
+/* ── ONBOARDING ── */
+.onboarding{height:100%;display:flex;flex-direction:column;overflow:hidden}
+.ob-header{padding:20px 24px 0;text-align:center;flex-shrink:0}
+.ob-title{font-size:22px;font-weight:800;margin-bottom:4px}
+.ob-sub{font-size:13px;color:var(--text-dim);margin-bottom:12px;line-height:1.5}
+.ob-search{display:flex;align-items:center;gap:10px;padding:11px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin:0 24px 4px;transition:border-color 0.2s}
+.ob-search:focus-within{border-color:var(--accent)}
+.ob-search input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px}
+.ob-search input::placeholder{color:var(--text-muted)}
+.ob-count{padding:4px 24px 2px;font-size:12px;color:var(--text-dim);flex-shrink:0}
+.ob-count strong{color:var(--accent)}
+.ob-scroll{flex:1;overflow-y:auto;padding:6px 24px 120px;-webkit-overflow-scrolling:touch}
+.ob-scroll::-webkit-scrollbar{display:none}
+.ob-cat{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin:14px 0 6px}
+.ob-cat:first-child{margin-top:2px}
+.ob-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:2px}
+.ob-t{padding:10px 6px;border-radius:var(--radius-sm);border:2px solid var(--border);background:var(--bg-card);cursor:pointer;transition:all 0.25s;text-align:center;position:relative}
+.ob-t:active{transform:scale(0.95)}
+.ob-t.sel{border-color:var(--accent);background:rgba(108,92,231,0.08)}
+.ob-t-i{font-size:22px;margin-bottom:3px;display:block}
+.ob-t-l{font-size:10px;font-weight:600;color:var(--text-dim);display:block;line-height:1.25}
+.ob-t.sel .ob-t-l{color:var(--text)}
+.ob-t-c{position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;background:var(--accent);color:white;font-size:9px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s}
+.ob-t.sel .ob-t-c{opacity:1}
+.ob-footer{position:fixed;bottom:0;left:0;right:0;padding:10px 24px calc(14px + var(--safe-bottom));background:linear-gradient(transparent,var(--bg) 30%);z-index:10}
+.ob-start{width:100%;padding:15px;border:none;border-radius:50px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all 0.3s}
+.ob-start.ready{background:linear-gradient(135deg,#6c5ce7,#a29bfe);color:white;box-shadow:0 4px 24px var(--accent-glow)}
+.ob-start:not(.ready){background:var(--bg-card);color:var(--text-muted);border:1px solid var(--border);cursor:default}
+
+/* ── EXPLORE ── */
+.explore-search{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:12px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);transition:border-color 0.2s}
+.explore-search:focus-within{border-color:var(--accent)}
+.explore-search input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px}
+.explore-search input::placeholder{color:var(--text-muted)}
+.topic-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.tcard{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 12px;cursor:pointer;transition:all 0.25s;position:relative;overflow:hidden}
+.tcard:active{transform:scale(0.96)}
+.tcard.sub{border-color:var(--accent)}
+.tcard-chk{position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px}
+.tcard.sub .tcard-chk{background:var(--accent);color:white}
+.tcard:not(.sub) .tcard-chk{background:var(--bg);border:1px solid var(--border);color:transparent}
+
+/* ── SAVED ── */
+.saved-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px;cursor:pointer;transition:all 0.2s;display:flex;gap:12px}
+.saved-card:active{transform:scale(0.98);background:var(--bg-card-hover)}
+.saved-card-icon{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.saved-card-info{flex:1;min-width:0}
+.saved-card-title{font-size:14px;font-weight:600;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.saved-card-meta{font-size:11px;color:var(--text-dim)}
+.saved-card-rm{align-self:center;color:var(--text-muted);font-size:18px;cursor:pointer;padding:6px;border-radius:6px}
+
+/* ── LOADING ── */
+.loading-reel{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:40px}
+.spinner{width:36px;height:36px;border:3px solid rgba(108,92,231,0.2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.empty-state{text-align:center;padding:60px 24px}
+.empty-state-icon{font-size:48px;margin-bottom:14px}
+.empty-state-title{font-size:17px;font-weight:600;color:var(--text-dim);margin-bottom:7px}
+.empty-state-desc{font-size:13px;color:var(--text-muted);line-height:1.6}
+
+/* ── DATE NAV ── */
+.date-nav{display:flex;align-items:center;justify-content:center;gap:14px;padding:10px 16px;flex-shrink:0}
+.date-btn{width:34px;height:34px;border-radius:50%;background:var(--bg-card);border:1px solid var(--border);color:var(--text-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px}
+.date-btn:active{background:var(--bg-card-hover)}
+.date-btn:disabled{opacity:0.2;cursor:default}
+.date-label{font-size:14px;font-weight:600;color:var(--text-dim)}
+.date-label strong{color:var(--text)}
+
+@media(min-width:600px){.reel-content{max-width:560px;margin:0 auto}.reel-actions{right:calc(50% - 300px)}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// INFOGRAM v3 — Pre-generated Knowledge Reels with Auth
+// ═══════════════════════════════════════════════════════════════
+
+const COLORS=["#6c5ce7","#00d2a0","#ff922b","#4dabf7","#ffd43b","#f06595","#22b8cf","#a29bfe","#ff6b6b","#51cf66","#fab005","#845ef7","#20c997","#ff8787","#66d9e8","#ffa94d","#9775fa","#38d9a9","#e64980","#748ffc","#ffe066","#63e6be","#da77f2","#74c0fc","#ffc078","#3bc9db","#e599f7","#8ce99a","#ffa8a8","#91a7ff"];
+
+const CATEGORIES={
+  "🧠 AI & Computing":[
+    {id:"ai",label:"Artificial Intelligence",icon:"🧠",img:"artificial+intelligence+neural"},
+    {id:"machine-learning",label:"Machine Learning",icon:"🤖",img:"machine+learning+algorithm"},
+    {id:"deep-learning",label:"Deep Learning",icon:"🔮",img:"deep+learning+neural+network"},
+    {id:"robotics",label:"Robotics",icon:"🦾",img:"robot+arm+automation"},
+    {id:"computer-vision",label:"Computer Vision",icon:"👁️",img:"computer+vision+recognition"},
+    {id:"nlp",label:"Natural Language Processing",icon:"💬",img:"language+processing+chatbot"},
+    {id:"cybersecurity",label:"Cybersecurity",icon:"🔐",img:"cybersecurity+hacking+firewall"},
+    {id:"quantum-computing",label:"Quantum Computing",icon:"⚛️",img:"quantum+computer+processor"},
+    {id:"blockchain",label:"Blockchain & Crypto",icon:"⛓️",img:"blockchain+cryptocurrency"},
+    {id:"cloud-computing",label:"Cloud Computing",icon:"☁️",img:"cloud+server+data+center"},
+  ],
+  "💰 Business & Finance":[
+    {id:"investing",label:"Investing & Markets",icon:"📈",img:"stock+market+trading"},
+    {id:"startup",label:"Startups & VC",icon:"🚀",img:"startup+silicon+valley"},
+    {id:"economics",label:"Economics",icon:"💹",img:"economics+finance+market"},
+    {id:"supply-chain",label:"Supply Chain",icon:"🔗",img:"logistics+warehouse+shipping"},
+    {id:"procurement",label:"Procurement",icon:"📋",img:"procurement+contract"},
+    {id:"real-estate",label:"Real Estate",icon:"🏠",img:"real+estate+property"},
+    {id:"personal-finance",label:"Personal Finance",icon:"💳",img:"savings+money+budget"},
+    {id:"crypto-defi",label:"DeFi & Web3",icon:"🪙",img:"defi+crypto+ethereum"},
+    {id:"marketing",label:"Marketing & Growth",icon:"📣",img:"marketing+advertising"},
+    {id:"negotiation",label:"Negotiation",icon:"🤝",img:"negotiation+handshake"},
+  ],
+  "⚙️ Engineering":[
+    {id:"mechanical-eng",label:"Mechanical Engineering",icon:"⚙️",img:"engine+gears+machinery"},
+    {id:"electrical-eng",label:"Electrical Engineering",icon:"⚡",img:"circuit+board+electronics"},
+    {id:"civil-eng",label:"Civil Engineering",icon:"🏗️",img:"bridge+construction"},
+    {id:"aerospace",label:"Aerospace",icon:"✈️",img:"jet+engine+aerospace"},
+    {id:"automotive",label:"Automotive",icon:"🏎️",img:"car+engine+turbo"},
+    {id:"3d-printing",label:"3D Printing",icon:"🖨️",img:"3d+printing+manufacturing"},
+    {id:"materials-sci",label:"Materials Science",icon:"🔬",img:"materials+alloy+microscope"},
+    {id:"renewable-energy",label:"Renewable Energy",icon:"☀️",img:"solar+wind+turbine"},
+    {id:"nuclear-energy",label:"Nuclear Energy",icon:"☢️",img:"nuclear+power+reactor"},
+    {id:"naval-eng",label:"Naval Engineering",icon:"🚢",img:"ship+engineering+naval"},
+  ],
+  "🔬 Science":[
+    {id:"physics",label:"Physics",icon:"🔭",img:"physics+particle+accelerator"},
+    {id:"chemistry",label:"Chemistry",icon:"🧪",img:"chemistry+molecules+lab"},
+    {id:"biology",label:"Biology",icon:"🧬",img:"biology+cell+microscope"},
+    {id:"astronomy",label:"Astronomy",icon:"🌌",img:"space+galaxy+nebula"},
+    {id:"geology",label:"Geology",icon:"🌋",img:"volcano+geology+earth"},
+    {id:"ocean-science",label:"Ocean Science",icon:"🌊",img:"ocean+research+submarine"},
+    {id:"climate-science",label:"Climate Science",icon:"🌡️",img:"climate+earth+atmosphere"},
+    {id:"neuroscience",label:"Neuroscience",icon:"🧠",img:"brain+neuron+synapse"},
+    {id:"genetics",label:"Genetics",icon:"🧬",img:"dna+genetics+genome"},
+    {id:"paleontology",label:"Paleontology",icon:"🦖",img:"dinosaur+fossil"},
+  ],
+  "🔢 Mathematics":[
+    {id:"mathematics",label:"Pure Mathematics",icon:"∑",img:"mathematics+fractal"},
+    {id:"statistics",label:"Statistics",icon:"📊",img:"statistics+data+chart"},
+    {id:"game-theory",label:"Game Theory",icon:"♟️",img:"chess+strategy"},
+    {id:"cryptography",label:"Cryptography",icon:"🔑",img:"cryptography+cipher"},
+    {id:"topology",label:"Topology",icon:"🍩",img:"topology+mobius+geometry"},
+  ],
+  "🏥 Health & Medicine":[
+    {id:"medicine",label:"Medicine",icon:"🏥",img:"hospital+surgery+medical"},
+    {id:"nutrition",label:"Nutrition",icon:"🥗",img:"nutrition+healthy+food"},
+    {id:"psychology",label:"Psychology",icon:"🧠",img:"psychology+mind+therapy"},
+    {id:"pharmacology",label:"Pharmacology",icon:"💊",img:"pharmacy+medicine+drug"},
+    {id:"epidemiology",label:"Epidemiology",icon:"🦠",img:"virus+pandemic+disease"},
+    {id:"fitness-science",label:"Exercise Science",icon:"🏋️",img:"fitness+gym+exercise"},
+    {id:"longevity",label:"Longevity",icon:"⏳",img:"aging+longevity+science"},
+    {id:"biotech",label:"Biotech",icon:"🧫",img:"biotech+laboratory+gene"},
+  ],
+  "🚀 Space":[
+    {id:"space-exploration",label:"Space Exploration",icon:"🛸",img:"space+shuttle+launch"},
+    {id:"moon-missions",label:"Moon Missions",icon:"🌙",img:"moon+landing+lunar"},
+    {id:"mars-colonization",label:"Mars Colonization",icon:"🔴",img:"mars+planet+rover"},
+    {id:"black-holes",label:"Black Holes",icon:"🕳️",img:"black+hole+cosmos"},
+    {id:"satellites",label:"Satellites & GPS",icon:"🛰️",img:"satellite+orbit+earth"},
+    {id:"astrobiology",label:"Alien Life",icon:"👽",img:"alien+exoplanet+telescope"},
+  ],
+  "🌍 Geopolitics & History":[
+    {id:"geopolitics",label:"Geopolitics",icon:"🌍",img:"geopolitics+world+map"},
+    {id:"ancient-history",label:"Ancient Civilizations",icon:"🏛️",img:"ancient+rome+egypt"},
+    {id:"world-wars",label:"World Wars",icon:"⚔️",img:"world+war+military"},
+    {id:"cold-war",label:"Cold War",icon:"🕵️",img:"cold+war+spy+berlin"},
+    {id:"conspiracy",label:"Conspiracy Theories",icon:"🔺",img:"conspiracy+mystery+eye"},
+    {id:"intelligence",label:"Intelligence Agencies",icon:"🕶️",img:"spy+intelligence+secret"},
+    {id:"empires",label:"Rise & Fall of Empires",icon:"👑",img:"empire+castle+kingdom"},
+    {id:"future-war",label:"Future of Warfare",icon:"🎯",img:"military+drone+warfare"},
+  ],
+  "🎨 Design & Creativity":[
+    {id:"ux-design",label:"UX/UI Design",icon:"🎨",img:"ux+design+interface"},
+    {id:"architecture",label:"Architecture",icon:"🏛️",img:"architecture+modern+building"},
+    {id:"photography",label:"Photography",icon:"📷",img:"photography+camera+lens"},
+    {id:"filmmaking",label:"Filmmaking",icon:"🎬",img:"filmmaking+cinema+director"},
+    {id:"music-theory",label:"Music Theory",icon:"🎵",img:"music+piano+notes"},
+    {id:"game-design",label:"Game Design",icon:"🎮",img:"game+design+controller"},
+  ],
+  "🧘 Philosophy & Mind":[
+    {id:"philosophy",label:"Philosophy",icon:"🤔",img:"philosophy+thinker+wisdom"},
+    {id:"consciousness",label:"Consciousness",icon:"✨",img:"consciousness+mind+light"},
+    {id:"stoicism",label:"Stoicism",icon:"🏛️",img:"stoic+statue+philosophy"},
+    {id:"decision-making",label:"Decision Making",icon:"⚖️",img:"decision+brain+choices"},
+    {id:"sleep-science",label:"Sleep Science",icon:"😴",img:"sleep+brain+dreams"},
+    {id:"meditation",label:"Meditation",icon:"🧘",img:"meditation+zen+peaceful"},
+  ],
+  "🌊 Animals & Nature":[
+    {id:"ocean-mammals",label:"Ocean Mammals",icon:"🐬",img:"dolphin+whale+ocean"},
+    {id:"predators",label:"Apex Predators",icon:"🦁",img:"lion+predator+wildlife"},
+    {id:"deep-sea",label:"Deep Sea Mysteries",icon:"🦑",img:"deep+sea+anglerfish"},
+    {id:"rainforests",label:"Rainforests",icon:"🌴",img:"rainforest+tropical+jungle"},
+    {id:"animal-intelligence",label:"Animal Intelligence",icon:"🐙",img:"octopus+intelligent"},
+    {id:"extinction",label:"Extinction",icon:"🦤",img:"endangered+conservation"},
+  ],
+  "🏗️ Infrastructure":[
+    {id:"mega-projects",label:"Mega Projects",icon:"🌉",img:"bridge+dam+mega"},
+    {id:"urban-planning",label:"Urban Planning",icon:"🏙️",img:"city+skyline+urban"},
+    {id:"transportation",label:"Transportation",icon:"🚄",img:"bullet+train+railway"},
+    {id:"water-systems",label:"Water Systems",icon:"💧",img:"water+dam+reservoir"},
+    {id:"power-grid",label:"Power Grid",icon:"🔌",img:"power+grid+electricity"},
+  ],
+  "🍕 Food & Agriculture":[
+    {id:"food-science",label:"Food Science",icon:"🍕",img:"food+science+molecular"},
+    {id:"fermentation",label:"Fermentation",icon:"🍺",img:"fermentation+brewing"},
+    {id:"agriculture",label:"Agriculture",icon:"🌾",img:"farm+agriculture+harvest"},
+    {id:"food-supply",label:"Global Food Systems",icon:"🌽",img:"food+supply+global"},
+  ],
+  "📡 Tech & Hardware":[
+    {id:"semiconductors",label:"Semiconductors",icon:"💽",img:"semiconductor+chip+silicon"},
+    {id:"ev-tech",label:"Electric Vehicles",icon:"🔋",img:"electric+car+tesla+battery"},
+    {id:"ar-vr",label:"AR/VR",icon:"🥽",img:"virtual+reality+headset"},
+    {id:"drones",label:"Drones",icon:"🚁",img:"drone+uav+aerial"},
+    {id:"biocomputing",label:"Biocomputing",icon:"🧫",img:"biocomputing+dna+molecular"},
+    {id:"internet-infra",label:"Internet Infrastructure",icon:"🌐",img:"internet+cable+fiber"},
+  ],
+  "🏆 Sports":[
+    {id:"sports-analytics",label:"Sports Analytics",icon:"📊",img:"sports+analytics+stadium"},
+    {id:"f1",label:"Formula 1",icon:"🏎️",img:"formula+one+racing"},
+    {id:"human-performance",label:"Human Performance",icon:"🏃",img:"athlete+performance"},
+    {id:"sports-psychology",label:"Sports Psychology",icon:"🧠",img:"athlete+mental+focus"},
+  ],
+  "📚 Learning & Leadership":[
+    {id:"memory-learning",label:"Memory & Learning",icon:"📖",img:"memory+brain+study"},
+    {id:"speed-reading",label:"Speed Reading",icon:"📚",img:"books+library+reading"},
+    {id:"systems-thinking",label:"Systems Thinking",icon:"🔄",img:"systems+diagram+flow"},
+    {id:"leadership",label:"Leadership",icon:"👔",img:"leadership+ceo+meeting"},
+  ],
+};
+
+const TOPICS=[];let _ci=0;
+for(const[cat,items] of Object.entries(CATEGORIES)){for(const item of items){TOPICS.push({...item,color:COLORS[_ci%COLORS.length],category:cat});_ci++}}
+const TOPIC_MAP={};TOPICS.forEach(t=>TOPIC_MAP[t.id]=t);
+
+// ── STATE ──
+let user=null; // {username, hash}
+let S={view:"feed",topics:[],weights:{},savedPosts:[],likedIds:new Set(),currentIndex:0,swipeHintShown:false,_obSel:[],_obQ:"",_exQ:""};
+let posts=[]; // today's posts
+let loadedDate="";
+
+// ── SIMPLE AUTH (hashed passwords stored in localStorage) ──
+function hashPw(pw){let h=0;for(let i=0;i<pw.length;i++)h=((h<<5)-h+pw.charCodeAt(i))|0;return h.toString(36)}
+
+function getUsers(){try{return JSON.parse(localStorage.getItem("ig-users")||"{}")}catch(e){return{}}}
+function saveUsers(u){localStorage.setItem("ig-users",JSON.stringify(u))}
+
+function login(username,password){
+  const users=getUsers();
+  const h=hashPw(password);
+  if(users[username]&&users[username].hash!==h)return"Wrong password";
+  if(!users[username])users[username]={hash:h,created:Date.now()};
+  saveUsers(users);
+  user={username};
+  localStorage.setItem("ig-current",username);
+  loadUserData();
+  return null;
+}
+
+function logout(){user=null;localStorage.removeItem("ig-current");render()}
+
+function loadUserData(){
+  if(!user)return;
+  const k="ig-u-"+user.username;
+  try{const d=JSON.parse(localStorage.getItem(k)||"{}");
+    S.topics=d.topics||[];S.weights=d.weights||{};
+    S.savedPosts=d.saved||[];S.likedIds=new Set(d.liked||[]);
+    S.view=S.topics.length?"feed":"onboarding";
+  }catch(e){S.view="onboarding"}
+}
+
+function saveUserData(){
+  if(!user)return;
+  localStorage.setItem("ig-u-"+user.username,JSON.stringify({
+    topics:S.topics,weights:S.weights,saved:S.savedPosts,liked:[...S.likedIds]
+  }));
+}
+
+// ── LOAD POSTS ──
+function todayStr(){const d=new Date();return d.toISOString().slice(0,10)}
+function dateStr(offset){const d=new Date();d.setDate(d.getDate()+offset);return d.toISOString().slice(0,10)}
+
+async function loadPosts(date){
+  if(!date)date=todayStr();
+  loadedDate=date;
+  try{
+    const resp=await fetch(`posts/${date}.json?v=${Date.now()}`);
+    if(!resp.ok)throw new Error("not found");
+    posts=await resp.json();
+  }catch(e){
+    // Try yesterday if today not ready yet
+    if(date===todayStr()){
+      try{
+        const y=dateStr(-1);
+        const resp2=await fetch(`posts/${y}.json?v=${Date.now()}`);
+        if(resp2.ok){posts=await resp2.json();loadedDate=y;}
+        else posts=[];
+      }catch(e2){posts=[]}
+    }else{posts=[]}
+  }
+  S.currentIndex=0;
+  sortPostsForUser();
+  render();
+}
+
+function sortPostsForUser(){
+  if(!S.topics.length||!posts.length)return;
+  // Prioritize user's topics, then rest
+  const userTopicSet=new Set(S.topics);
+  const mine=[];const rest=[];
+  for(const p of posts){
+    if(userTopicSet.has(p.topicId))mine.push(p);else rest.push(p);
+  }
+  // Shuffle rest so it's not always same order
+  for(let i=rest.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[rest[i],rest[j]]=[rest[j],rest[i]]}
+  // Weight user's topics by preference
+  mine.sort((a,b)=>(S.weights[b.topicId]||1)-(S.weights[a.topicId]||1));
+  posts=[...mine,...rest];
+}
+
+// ── ACTIONS ──
+function boostTopic(tid){S.weights[tid]=(S.weights[tid]||1)+0.2;saveUserData()}
+function toggleLike(id,tid){if(S.likedIds.has(id))S.likedIds.delete(id);else{S.likedIds.add(id);boostTopic(tid)}saveUserData();render()}
+function toggleSave(id){
+  if(S.savedPosts.find(p=>p.id===id)){S.savedPosts=S.savedPosts.filter(p=>p.id!==id)}
+  else{const post=posts.find(p=>p.id===id);if(post){S.savedPosts.unshift({...post,savedAt:Date.now()});boostTopic(post.topicId)}}
+  saveUserData();render();
+}
+
+function formatContent(text){
+  if(!text)return"";
+  return text
+    .replace(/\[FORMULA\]([\s\S]*?)\[\/FORMULA\]/g,'<div class="formula-block">$1</div>')
+    .replace(/\[INSIGHT\]([\s\S]*?)\[\/INSIGHT\]/g,'<div class="key-insight">$1</div>')
+    .replace(/^## (.+)$/gm,'<h3>$1</h3>')
+    .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .split("\n").filter(l=>l.trim()).map(l=>{
+      const t=l.trim();
+      if(t.startsWith("<h3>")||t.startsWith("<div"))return t;
+      return"<p>"+t+"</p>";
+    }).join("");
+}
+
+// ═══════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════
+
+function render(){
+  const app=document.getElementById("app");
+  if(!user){renderAuth(app);return}
+  if(S.view==="onboarding"){renderOnboarding(app);return}
+  renderApp(app);
+}
+
+// ── AUTH ──
+let authMode="login",authErr="";
+function renderAuth(app){
+  app.innerHTML=`<div class="auth-screen">
+    <div class="auth-logo">🔬</div>
+    <h1 class="auth-title">InfoGram</h1>
+    <p class="auth-sub">AI-curated knowledge reels.<br>New deep-dive articles every day.</p>
+    <div class="auth-form">
+      <div class="auth-error">${authErr}</div>
+      <input class="auth-input" id="authUser" type="text" placeholder="Username" autocomplete="username" autofocus>
+      <input class="auth-input" id="authPw" type="password" placeholder="Password" autocomplete="current-password">
+      <button class="auth-btn" onclick="doAuth()">${authMode==="login"?"Sign In":"Create Account"}</button>
+      <div class="auth-toggle">${authMode==="login"
+        ?`New here? <span onclick="authMode='signup';authErr='';render()">Create account</span>`
+        :`Have an account? <span onclick="authMode='login';authErr='';render()">Sign in</span>`}</div>
+    </div>
+  </div>`;
+  // Enter key
+  document.getElementById("authPw").addEventListener("keydown",e=>{if(e.key==="Enter")doAuth()});
+}
+
+window.doAuth=function(){
+  const u=document.getElementById("authUser").value.trim().toLowerCase();
+  const p=document.getElementById("authPw").value;
+  if(!u||u.length<2){authErr="Username must be at least 2 characters";render();return}
+  if(!p||p.length<3){authErr="Password must be at least 3 characters";render();return}
+  const users=getUsers();
+  if(authMode==="signup"&&users[u]){authErr="Username already taken. Try signing in.";render();return}
+  if(authMode==="login"&&!users[u]){authErr="No account found. Create one first.";render();return}
+  const err=login(u,p);
+  if(err){authErr=err;render();return}
+  authErr="";loadPosts();
+};
+
+// ── ONBOARDING ──
+function renderOnboarding(app){
+  const sel=S._obSel;const q=S._obQ.toLowerCase();
+  let catHTML="";
+  for(const[cat,items] of Object.entries(CATEGORIES)){
+    const filt=q?items.filter(t=>t.label.toLowerCase().includes(q)||t.id.includes(q)):items;
+    if(!filt.length)continue;
+    catHTML+=`<div class="ob-cat">${cat}</div><div class="ob-grid">`;
+    for(const t of filt)catHTML+=`<div class="ob-t ${sel.includes(t.id)?'sel':''}" onclick="togOB('${t.id}')"><span class="ob-t-c">✓</span><span class="ob-t-i">${t.icon}</span><span class="ob-t-l">${t.label}</span></div>`;
+    catHTML+=`</div>`;
+  }
+  app.innerHTML=`<div class="onboarding">
+    <div class="ob-header"><div style="font-size:28px;margin-bottom:6px">👋 Hey ${user.username}!</div><div class="ob-title">Pick Your Interests</div><p class="ob-sub">Choose 3+ topics for your personalized feed.</p></div>
+    <div class="ob-search"><span style="color:var(--text-muted)">🔍</span><input type="text" placeholder="Search ${TOPICS.length} topics..." value="${S._obQ}" oninput="S._obQ=this.value;render()"></div>
+    <div class="ob-count"><strong>${sel.length}</strong> selected${sel.length<3?` · pick ${3-sel.length} more`:' ✓'}</div>
+    <div class="ob-scroll">${catHTML}</div>
+    <div class="ob-footer"><button class="ob-start ${sel.length>=3?'ready':''}" onclick="${sel.length>=3?'finishOB()':''}">${sel.length<3?`Pick ${3-sel.length} more`:'Start Exploring →'}</button></div>
+  </div>`;
+}
+window.togOB=function(id){const i=S._obSel.indexOf(id);if(i>=0)S._obSel.splice(i,1);else S._obSel.push(id);render()};
+window.finishOB=function(){S.topics=[...S._obSel];S.weights={};S.topics.forEach(t=>S.weights[t]=1);S.view="feed";saveUserData();sortPostsForUser();render()};
+
+// ── APP SHELL ──
+function renderApp(app){
+  const v=S.view;
+  app.innerHTML=`
+    <div class="header">
+      <div class="header-left"><span class="logo-icon">🔬</span><h1>InfoGram</h1></div>
+      <div class="header-right">
+        <div class="hdr-btn" onclick="logout()"><div class="hdr-avatar">${user.username[0].toUpperCase()}</div>${user.username}<span style="margin-left:4px;font-size:12px;color:var(--text-muted)">✕</span></div>
+      </div>
+    </div>
+    ${v==="feed"?renderDateNav():''}
+    <div class="main" id="mainArea">${v==="feed"?renderFeed():''}${v==="saved"?renderSaved():''}${v==="explore"?renderExplore():''}</div>
+    <div class="bottom-nav">
+      <div class="nav-item ${v==="feed"?'active':''}" onclick="nav('feed')"><span class="nav-icon">🏠</span><span class="nav-label">Feed</span></div>
+      <div class="nav-item ${v==="explore"?'active':''}" onclick="nav('explore')"><span class="nav-icon">🧭</span><span class="nav-label">Explore</span></div>
+      <div class="nav-item ${v==="saved"?'active':''}" onclick="nav('saved')" style="position:relative"><span class="nav-icon">🔖</span><span class="nav-label">Saved</span>${S.savedPosts.length?`<span class="saved-count">${S.savedPosts.length}</span>`:''}</div>
+    </div>`;
+  if(v==="feed")initSwipe();
+}
+
+window.nav=function(v){S.view=v;render()};
+
+function renderDateNav(){
+  const isToday=loadedDate===todayStr();
+  const d=new Date(loadedDate+"T12:00:00");
+  const label=isToday?"Today":d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+  return`<div class="date-nav">
+    <button class="date-btn" onclick="goDate(-1)">‹</button>
+    <div class="date-label"><strong>${label}</strong> · ${posts.length} articles</div>
+    <button class="date-btn" onclick="goDate(1)" ${isToday?'disabled':''}>›</button>
+  </div>`;
+}
+window.goDate=function(dir){
+  const d=new Date(loadedDate+"T12:00:00");d.setDate(d.getDate()+dir);
+  const ds=d.toISOString().slice(0,10);
+  if(ds>todayStr())return;
+  loadPosts(ds);
+};
+
+// ── FEED ──
+function renderFeed(){
+  if(!posts.length)return`<div class="loading-reel"><div class="empty-state-icon">📡</div><div style="font-size:14px;color:var(--text-dim);text-align:center">No articles for this date yet.<br>Try going back a day.</div></div>`;
+
+  const post=posts[S.currentIndex];if(!post)return'';
+  const topic=TOPIC_MAP[post.topicId]||TOPICS[0];
+  const isSvd=S.savedPosts.some(p=>p.id===post.id);
+  const isLkd=S.likedIds.has(post.id);
+  const isFollowed=S.topics.includes(post.topicId);
+  const imgQ=post.imageQuery||topic.img||"knowledge";
+  const imgUrl=post.imageUrl||`https://source.unsplash.com/800x450/?${encodeURIComponent(imgQ)}&sig=${encodeURIComponent(post.id||post.title)}`;
+
+  const maxD=Math.min(posts.length,20);const dS=Math.max(0,S.currentIndex-10);const dE=Math.min(posts.length,dS+maxD);
+  const dots=posts.slice(dS,dE);
+
+  return`
+    <div class="progress-bar">${dots.map((_,i)=>{const ri=dS+i;return`<div class="progress-seg ${ri<S.currentIndex?'done':''} ${ri===S.currentIndex?'active':''}">${ri===S.currentIndex?'<div class="pfill"></div>':''}</div>`}).join("")}</div>
+    <div class="reels-container" id="reelsC">
+      <div class="reel-slide" id="curReel">
+        <div class="reel-content">
+          <div class="reel-topic-bar">
+            <div class="reel-topic-icon" style="background:${topic.color}18;border:1px solid ${topic.color}33">${topic.icon}</div>
+            <div>
+              <div class="reel-topic-name" style="color:${topic.color}">${topic.label}${isFollowed?'':' <span style="font-size:9px;opacity:0.5;font-weight:400;letter-spacing:0">· NEW TOPIC</span>'}</div>
+              <div class="reel-topic-meta">${post.readTime||'4-6'} min read · ${post.difficulty||'Deep Dive'}</div>
+            </div>
+            <span class="reel-difficulty" style="background:${topic.color}18;color:${topic.color};border:1px solid ${topic.color}33">${S.currentIndex+1}/${posts.length}</span>
+          </div>
+          <img class="reel-hero-image" src="${imgUrl}" alt="" onerror="this.style.display='none'" loading="eager">
+          <h2 class="reel-title">${post.title}</h2>
+          <div class="reel-body">${formatContent(post.content)}</div>
+          <div style="height:100px;flex-shrink:0"></div>
+        </div>
+      </div>
+    </div>
+    <div class="reel-actions">
+      <div class="reel-action-btn" onclick="toggleLike('${post.id}','${post.topicId}');render()"><div class="reel-action-icon ${isLkd?'liked':''}">${isLkd?'❤️':'🤍'}</div><span class="reel-action-label">${isLkd?'Liked':'Like'}</span></div>
+      <div class="reel-action-btn" onclick="toggleSave('${post.id}');render()"><div class="reel-action-icon ${isSvd?'saved':''}">${isSvd?'🔖':'📑'}</div><span class="reel-action-label">${isSvd?'Saved':'Save'}</span></div>
+      <div class="reel-action-btn" onclick="shareP('${post.id}')"><div class="reel-action-icon">↗️</div><span class="reel-action-label">Share</span></div>
+    </div>
+    ${!S.swipeHintShown&&posts.length>1?`<div class="swipe-hint"><span style="font-size:14px;color:rgba(255,255,255,0.25)">← swipe → to skip &nbsp;·&nbsp; ↑ swipe at bottom for next</span></div>`:''}`;
+}
+
+window.shareP=function(id){
+  const post=posts.find(p=>p.id===id);if(!post)return;
+  const text=`${post.title}\n\n${(post.content||'').replace(/\*\*/g,'').replace(/`/g,'').replace(/##\s*/g,'').replace(/\[.*?\]/g,'').slice(0,400)}...`;
+  if(navigator.share)navigator.share({title:post.title,text});else navigator.clipboard.writeText(text).then(()=>alert("Copied!"));
+};
+
+// ── SWIPE (horizontal + vertical) ──
+let tsx=0,tsy=0,tst=0,isw=false,swipeDir=null;
+function initSwipe(){
+  const el=document.getElementById("reelsC");if(!el)return;
+
+  el.addEventListener("touchstart",e=>{
+    tsx=e.touches[0].clientX;
+    tsy=e.touches[0].clientY;
+    tst=Date.now();
+    isw=true;
+    swipeDir=null;
+  },{passive:true});
+
+  el.addEventListener("touchmove",e=>{
+    if(!isw||swipeDir)return;
+    const dx=Math.abs(e.touches[0].clientX-tsx);
+    const dy=Math.abs(e.touches[0].clientY-tsy);
+    // Lock direction after 10px movement
+    if(dx>10||dy>10){
+      swipeDir=(dx>dy)?"horizontal":"vertical";
+    }
+  },{passive:true});
+
+  el.addEventListener("touchend",e=>{
+    if(!isw)return;isw=false;
+    const dx=tsx-e.changedTouches[0].clientX;
+    const dy=tsy-e.changedTouches[0].clientY;
+    const dt=Date.now()-tst;
+    const vx=Math.abs(dx)/dt;
+    const vy=Math.abs(dy)/dt;
+
+    if(swipeDir==="horizontal"){
+      // Swipe LEFT (finger moves left = dx positive) → NEXT article
+      if(dx>50&&(vx>0.25||dx>120)){animateAndGo("next")}
+      // Swipe RIGHT (finger moves right = dx negative) → PREVIOUS article
+      else if(dx<-50&&(vx>0.25||dx<-120)){animateAndGo("prev")}
+    }
+    else if(swipeDir==="vertical"){
+      const r=document.getElementById("curReel");
+      const bot=r&&(r.scrollHeight-r.scrollTop-r.clientHeight<20);
+      const top=r&&r.scrollTop<20;
+      if(dy>60&&(vy>0.3||dy>150)&&bot)animateAndGo("next");
+      else if(dy<-60&&(vy>0.3||dy<-150)&&top)animateAndGo("prev");
+    }
+    swipeDir=null;
+  },{passive:true});
+
+  // Keyboard: arrows + j/k
+  document.onkeydown=e=>{
+    if(S.view!=="feed")return;
+    if(e.key==="ArrowRight"||e.key==="ArrowDown"||e.key==="j")animateAndGo("next");
+    if(e.key==="ArrowLeft"||e.key==="ArrowUp"||e.key==="k")animateAndGo("prev");
+  };
+
+  // Mouse wheel (vertical at boundaries)
+  let wt;el.addEventListener("wheel",e=>{
+    const r=document.getElementById("curReel");if(!r)return;
+    const bot=r.scrollHeight-r.scrollTop-r.clientHeight<20;const top=r.scrollTop<20;
+    if(e.deltaY>50&&bot){clearTimeout(wt);wt=setTimeout(()=>animateAndGo("next"),100)}
+    else if(e.deltaY<-50&&top){clearTimeout(wt);wt=setTimeout(()=>animateAndGo("prev"),100)}
+  },{passive:true});
+}
+
+function animateAndGo(dir){
+  if(dir==="next"&&S.currentIndex>=posts.length-1)return;
+  if(dir==="prev"&&S.currentIndex<=0)return;
+
+  const slide=document.getElementById("curReel");
+  if(slide){
+    slide.classList.add(dir==="next"?"slide-out-left":"slide-out-right");
+    setTimeout(()=>{
+      if(dir==="next")S.currentIndex++;else S.currentIndex--;
+      S.swipeHintShown=true;
+      S._slideFrom=dir;
+      render();
+    },200);
+  }else{
+    if(dir==="next")S.currentIndex++;else S.currentIndex--;
+    S.swipeHintShown=true;
+    render();
+  }
+}
+
+// After render, apply entrance animation
+const _origRender=render;
+render=function(){
+  _origRender();
+  if(S._slideFrom&&S.view==="feed"){
+    const slide=document.getElementById("curReel");
+    if(slide){
+      slide.classList.add(S._slideFrom==="next"?"slide-in-left":"slide-in-right");
+      setTimeout(()=>slide.classList.remove("slide-in-left","slide-in-right"),350);
+    }
+    S._slideFrom=null;
+  }
+};
+
+// ── SAVED ──
+function renderSaved(){
+  if(!S.savedPosts.length)return`<div class="page-container"><div class="empty-state"><div class="empty-state-icon">📚</div><div class="empty-state-title">No saved articles</div><div class="empty-state-desc">Tap save on any reel to keep it here.</div></div></div>`;
+  return`<div class="page-container"><div class="section-title">Saved · ${S.savedPosts.length}</div>${S.savedPosts.map(p=>{
+    const t=TOPIC_MAP[p.topicId]||TOPICS[0];
+    return`<div class="saved-card" onclick="openSvd('${p.id}')"><div class="saved-card-icon" style="background:${t.color}15;border:1px solid ${t.color}22">${t.icon}</div><div class="saved-card-info"><div class="saved-card-title">${p.title}</div><div class="saved-card-meta">${t.label} · ${p.difficulty||''} · ${new Date(p.savedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div></div><div class="saved-card-rm" onclick="event.stopPropagation();rmSvd('${p.id}')">✕</div></div>`;
+  }).join("")}</div>`;
+}
+window.openSvd=function(id){
+  let idx=posts.findIndex(p=>p.id===id);
+  if(idx<0){const s=S.savedPosts.find(p=>p.id===id);if(s){posts.push(s);idx=posts.length-1}}
+  if(idx>=0){S.currentIndex=idx;S.view="feed";render()}
+};
+window.rmSvd=function(id){S.savedPosts=S.savedPosts.filter(p=>p.id!==id);saveUserData();render()};
+
+// ── EXPLORE ──
+function renderExplore(){
+  const q=S._exQ.toLowerCase();
+  const sub=TOPICS.filter(t=>S.topics.includes(t.id));
+  const unsub=TOPICS.filter(t=>!S.topics.includes(t.id));
+  const all=[...sub,...unsub].filter(t=>!q||t.label.toLowerCase().includes(q)||t.id.includes(q)||t.category.toLowerCase().includes(q));
+
+  let h=`<div class="page-container">
+    <div class="explore-search"><span style="color:var(--text-muted)">🔍</span><input type="text" placeholder="Search ${TOPICS.length} topics..." value="${S._exQ}" oninput="S._exQ=this.value;render()"></div>
+    <div class="section-title">Your Topics · ${S.topics.length} active</div><div class="topic-grid">`;
+  for(const t of all.slice(0,50)){
+    const s=S.topics.includes(t.id);const w=S.weights[t.id]||0;
+    h+=`<div class="tcard ${s?'sub':''}" onclick="togT('${t.id}')">
+      <div class="tcard-chk">${s?'✓':''}</div>
+      <div style="font-size:24px;margin-bottom:6px">${t.icon}</div>
+      <div style="font-size:12px;font-weight:700;margin-bottom:2px;color:${s?t.color:'var(--text-dim)'}">${t.label}</div>
+      <div style="font-size:10px;color:var(--text-dim)">${s?(w>1.2?'🔥 Trending':'Active'):'Tap to add'}</div>
+      ${s?`<div style="margin-top:6px;height:3px;border-radius:2px;background:rgba(255,255,255,0.06);overflow:hidden"><div style="height:100%;width:${Math.min(w/3*100,100)}%;background:${t.color};border-radius:2px"></div></div>`:''}
+    </div>`;
+  }
+  h+=`</div>
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;margin:12px 0">
+      <div style="font-size:14px;font-weight:700;margin-bottom:6px">🧠 How Your Feed Works</div>
+      <p style="font-size:13px;color:var(--text-dim);line-height:1.6">30 new articles are generated daily across all topics. <strong style="color:var(--text)">Your topics appear first</strong>, sorted by preference weight. Topics you like & save get boosted with 🔥. Everyone sees all articles — yours are just prioritized.</p>
+    </div>
+    <div style="text-align:center;margin-top:20px;color:var(--text-muted);font-size:11px">InfoGram v3 · ${TOPICS.length} Topics · ${user.username}</div>
+  </div>`;
+  return h;
+}
+window.togT=function(id){
+  const i=S.topics.indexOf(id);
+  if(i>=0){if(S.topics.length<=1)return;S.topics.splice(i,1);delete S.weights[id]}
+  else{S.topics.push(id);S.weights[id]=1}
+  saveUserData();sortPostsForUser();render();
+};
+
+// ── INIT ──
+const cur=localStorage.getItem("ig-current");
+if(cur){user={username:cur};loadUserData();loadPosts()}
+else render();
+</script>
+</body>
+</html>
