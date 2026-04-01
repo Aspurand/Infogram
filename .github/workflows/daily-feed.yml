@@ -27,7 +27,8 @@ jobs:
       - name: Generate daily posts
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python generate.py
+          PYTHONUNBUFFERED: "1"
+        run: python -u generate.py
 
       - name: Commit and push new posts
         run: |
