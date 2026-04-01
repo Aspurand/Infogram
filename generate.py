@@ -1,19 +1,15 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3 -u
 """
-InfoGram Daily Post Generator v3 (Gemini Free Tier)
+InfoGram Daily Post Generator v4 (Gemini Free Tier)
 
-Key fixes from v2:
-- REMOVED google_search tool (this was causing all 429 errors — grounding
-  has much stricter rate limits on free tier than plain generation)
-- Generate in 3 batches of 10 with 60s cooldown between batches
-- Proper exponential backoff on 429s
-- Generates Google image search URLs for each article
-- Timeout: ~12 minutes total
+v4 fixes:
+- FORCE UNBUFFERED OUTPUT (this is why v3 showed no logs in GitHub Actions)
+- Shorter API timeout (30s instead of 120s) so failed calls don't hang
+- sys.stdout.flush() after every print
+- No google_search grounding (caused all 429s)
+- Batch generation: 3 batches of 10 with 60s cooldown
 
-Free tier limits (without grounding): 30 RPM, 1500 RPD, 1M TPD
-We use: 30 requests total, well within limits.
-
-Usage: GEMINI_API_KEY=AIza... python generate.py
+Usage: GEMINI_API_KEY=AIza... python -u generate.py
 """
 
 import json, os, sys, time, random, hashlib
@@ -21,13 +17,22 @@ from datetime import datetime, date
 from pathlib import Path
 import urllib.request, urllib.error
 
+# CRITICAL: Force unbuffered stdout so GitHub Actions shows output in real time
+sys.stdout.reconfigure(line_buffering=True)
+
+def log(msg):
+    """Print with guaranteed flush."""
+    print(msg)
+    sys.stdout.flush()
+
 API_KEY = os.environ.get("GEMINI_API_KEY", "")
-MODEL = "gemini-2.0-flash"  # Back to full flash — the 429s were from grounding, not the model
+MODEL = "gemini-2.0-flash"
 POSTS_DIR = Path("posts")
 NUM_POSTS = 30
-MAX_RETRIES = 4
+MAX_RETRIES = 3
 BATCH_SIZE = 10
-BATCH_COOLDOWN = 60  # seconds between batches
+BATCH_COOLDOWN = 60
+API_TIMEOUT = 30  # seconds — fail fast, don't hang
 
 TOPICS = [
     {"id":"ai","label":"Artificial Intelligence","category":"AI & Computing"},
@@ -140,7 +145,6 @@ TOPICS = [
     {"id":"leadership","label":"Leadership","category":"Learning & Leadership"},
 ]
 
-# Image search queries mapped to topic IDs for Google-sourced images
 IMG_QUERIES = {
     "ai":"artificial+intelligence+neural+network","machine-learning":"machine+learning+algorithm+data",
     "deep-learning":"deep+learning+neural+network+layers","robotics":"robot+arm+automation+factory",
@@ -242,14 +246,13 @@ def pick_topics_and_prompts(n=30):
 
 
 def make_image_url(topic_id, title):
-    """Generate a reliable image URL using Unsplash source."""
     query = IMG_QUERIES.get(topic_id, "knowledge+science+technology")
     sig = hashlib.md5(f"{date.today()}-{title}".encode()).hexdigest()[:8]
     return f"https://source.unsplash.com/800x450/?{query}&sig={sig}"
 
 
 def call_gemini(topic, prompt):
-    """Call Gemini API — NO grounding tools (that caused all 429 errors)."""
+    """Call Gemini API. No grounding tools. Short timeout."""
 
     user_prompt = f"""You are a brilliant knowledge content creator for InfoGram, an addictive learning feed. Create an in-depth educational article.
 
@@ -283,7 +286,7 @@ Respond ONLY with valid JSON, no markdown fences:
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent?key={API_KEY}"
 
     req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"})
-    resp = urllib.request.urlopen(req, timeout=120)
+    resp = urllib.request.urlopen(req, timeout=API_TIMEOUT)
     data = json.loads(resp.read())
 
     candidates = data.get("candidates", [])
@@ -309,7 +312,7 @@ Respond ONLY with valid JSON, no markdown fences:
 def generate_post(topic, prompt, index):
     for attempt in range(MAX_RETRIES):
         try:
-            print(f"  [{index+1}/{NUM_POSTS}] {topic['label']}: {prompt[:55]}...")
+            log(f"  [{index+1}/{NUM_POSTS}] {topic['label']}: {prompt[:55]}...")
             result = call_gemini(topic, prompt)
 
             post_id = hashlib.md5(
@@ -324,41 +327,62 @@ def generate_post(topic, prompt, index):
             result["generatedAt"] = datetime.utcnow().isoformat() + "Z"
 
             wc = len(result.get("content", "").split())
-            print(f"    ✓ \"{result['title']}\" ({wc} words)")
+            log(f"    ✓ \"{result['title']}\" ({wc} words)")
             return result
 
         except urllib.error.HTTPError as e:
-            print(f"    ✗ Attempt {attempt+1}: HTTP {e.code}")
+            log(f"    ✗ Attempt {attempt+1}: HTTP {e.code}")
             if e.code == 429 and attempt < MAX_RETRIES - 1:
                 wait = 30 * (attempt + 1)
-                print(f"    ⏳ Rate limited. Waiting {wait}s...")
+                log(f"    ⏳ Rate limited. Waiting {wait}s...")
                 time.sleep(wait)
             elif attempt < MAX_RETRIES - 1:
-                time.sleep(10)
+                time.sleep(5)
             else:
-                print(f"    ✗ All attempts failed for this article")
+                log(f"    ✗ All {MAX_RETRIES} attempts failed")
 
         except Exception as e:
-            print(f"    ✗ Attempt {attempt+1}: {e}")
+            log(f"    ✗ Attempt {attempt+1}: {type(e).__name__}: {e}")
             if attempt < MAX_RETRIES - 1:
-                time.sleep(10)
+                time.sleep(5)
+            else:
+                log(f"    ✗ All {MAX_RETRIES} attempts failed")
     return None
 
 
 def main():
+    log("=" * 50)
+    log("InfoGram Generator v4")
+    log("=" * 50)
+
     if not API_KEY:
-        print("ERROR: GEMINI_API_KEY not set")
-        print("Get free key: https://aistudio.google.com/apikey")
+        log("ERROR: GEMINI_API_KEY not set")
+        log("Get free key: https://aistudio.google.com/apikey")
         sys.exit(1)
 
-    today = str(date.today())
-    print(f"\n🔬 InfoGram Generator v3 — {today}")
-    print(f"   Model: {MODEL} (no grounding — avoids 429s)")
-    print(f"   Strategy: {NUM_POSTS} articles in {NUM_POSTS // BATCH_SIZE} batches of {BATCH_SIZE}")
-    print(f"   Est. time: ~{(NUM_POSTS * 3 + (NUM_POSTS // BATCH_SIZE) * BATCH_COOLDOWN) // 60} minutes\n")
+    log(f"API Key: {API_KEY[:8]}...{API_KEY[-4:]}")
+    log(f"Model: {MODEL}")
+    log(f"Date: {date.today()}")
+    log(f"Posts: {NUM_POSTS}")
+    log(f"Batches: {NUM_POSTS // BATCH_SIZE} x {BATCH_SIZE}")
+    log(f"Timeout per request: {API_TIMEOUT}s")
+    log("")
 
     POSTS_DIR.mkdir(exist_ok=True)
 
+    # Quick API test first
+    log("Testing API connection...")
+    try:
+        test_url = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}?key={API_KEY}"
+        test_req = urllib.request.Request(test_url)
+        test_resp = urllib.request.urlopen(test_req, timeout=10)
+        log(f"  ✓ API connected (status {test_resp.status})")
+    except Exception as e:
+        log(f"  ✗ API connection failed: {e}")
+        log("  Check your GEMINI_API_KEY secret")
+        sys.exit(1)
+
+    log("")
     selections = pick_topics_and_prompts(NUM_POSTS)
     posts = []
     failed = 0
@@ -368,7 +392,7 @@ def main():
         batch_idx = batch_num // BATCH_SIZE + 1
         total_batches = (len(selections) + BATCH_SIZE - 1) // BATCH_SIZE
 
-        print(f"\n── Batch {batch_idx}/{total_batches} ({len(batch)} articles) ──")
+        log(f"── Batch {batch_idx}/{total_batches} ({len(batch)} articles) ──")
 
         for i, (topic, prompt) in enumerate(batch):
             post = generate_post(topic, prompt, batch_num + i)
@@ -376,45 +400,42 @@ def main():
                 posts.append(post)
             else:
                 failed += 1
-            # 3s between requests within a batch
             if i < len(batch) - 1:
                 time.sleep(3)
 
-        # Cooldown between batches (skip after last batch)
         if batch_num + BATCH_SIZE < len(selections):
-            print(f"   ⏸️  Cooling down {BATCH_COOLDOWN}s before next batch...")
+            log(f"  ⏸️  Cooling down {BATCH_COOLDOWN}s...")
             time.sleep(BATCH_COOLDOWN)
 
-    # Save results
-    output_path = POSTS_DIR / f"{today}.json"
+    output_path = POSTS_DIR / f"{date.today()}.json"
     with open(output_path, "w") as f:
         json.dump(posts, f, indent=2)
 
-    print(f"\n{'='*50}")
-    print(f"✅ Done! {len(posts)} articles generated, {failed} failed")
-    print(f"📁 {output_path}")
-    print(f"💰 Cost: $0.00")
+    log("")
+    log("=" * 50)
+    log(f"✅ Done! {len(posts)} articles, {failed} failed")
+    log(f"📁 {output_path}")
+    log(f"💰 Cost: $0.00")
 
     cats = {}
     for p in posts:
         cats[p["category"]] = cats.get(p["category"], 0) + 1
-    print(f"\n📊 Breakdown:")
+    log("\nBreakdown:")
     for cat, count in sorted(cats.items()):
-        print(f"   {cat}: {count}")
+        log(f"  {cat}: {count}")
 
     words = [len(p.get("content", "").split()) for p in posts]
     if words:
-        print(f"📝 Words: min={min(words)} max={max(words)} avg={sum(words)//len(words)}")
+        log(f"\nWords: min={min(words)} max={max(words)} avg={sum(words)//len(words)}")
 
     if len(posts) == 0:
-        print("\n❌ FATAL: Zero posts generated!")
+        log("\n❌ FATAL: Zero posts generated!")
         sys.exit(1)
-
     if failed > 10:
-        print(f"\n⚠️  {failed} failures — check API key and quota")
+        log(f"\n⚠️  {failed} failures")
         sys.exit(1)
 
-    print("\n🎉 Feed ready!")
+    log("\n🎉 Feed ready!")
 
 
 if __name__ == "__main__":
