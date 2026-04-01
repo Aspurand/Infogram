@@ -28,11 +28,12 @@ def log(msg):
 API_KEY = os.environ.get("GEMINI_API_KEY", "")
 MODEL = "gemini-2.0-flash"
 POSTS_DIR = Path("posts")
-NUM_POSTS = 30
+NUM_POSTS = 10
 MAX_RETRIES = 3
 BATCH_SIZE = 10
-BATCH_COOLDOWN = 60
-API_TIMEOUT = 30  # seconds — fail fast, don't hang
+BATCH_COOLDOWN = 0
+API_TIMEOUT = 30
+REQUEST_DELAY = 10  # 10 seconds between each request — very safe for tight quotas
 
 TOPICS = [
     {"id":"ai","label":"Artificial Intelligence","category":"AI & Computing"},
@@ -401,7 +402,8 @@ def main():
             else:
                 failed += 1
             if i < len(batch) - 1:
-                time.sleep(3)
+                log(f"    ⏳ Waiting {REQUEST_DELAY}s before next...")
+                time.sleep(REQUEST_DELAY)
 
         if batch_num + BATCH_SIZE < len(selections):
             log(f"  ⏸️  Cooling down {BATCH_COOLDOWN}s...")
