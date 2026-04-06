@@ -1,216 +1,123 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="InfoGram">
-<meta name="theme-color" content="#f4f1eb" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#1a1f1a" media="(prefers-color-scheme: dark)">
-<title>InfoGram</title>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700&family=Nunito:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<meta name="apple-mobile-web-app-title" content="BookGram">
+<meta name="theme-color" content="#f4f1eb">
+<title>BookGram</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Nunito:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-/* ── NATURE CALM THEME — AUTO LIGHT/DARK ── */
-:root{
-  /* Light mode (default) */
-  --bg:#f4f1eb;--bg-card:#ffffff;--bg-card-hover:#f0ede6;--bg-input:#ffffff;
+/* ── LIGHT THEME ── */
+[data-theme="light"]{
+  --bg:#f4f1eb;--bg-card:#ffffff;--bg-card-hover:#f7f5f0;--bg-input:#ffffff;
   --border:#e0dbd2;--border-strong:#c8c2b6;
-  --text:#2c3e2c;--text-dim:#6b7d6b;--text-muted:#9ba89b;
-  --accent:#3d8b37;--accent-light:#5ba854;--accent-glow:rgba(61,139,55,0.15);--accent-soft:rgba(61,139,55,0.08);
-  --green:#2d8a4e;--red:#c0392b;--amber:#d4a017;--blue:#2e86ab;
-  --pink:#c44569;--orange:#e17055;--cyan:#00b4d8;
-  --shadow:0 2px 12px rgba(44,62,44,0.06);--shadow-lg:0 8px 30px rgba(44,62,44,0.1);
-  --header-bg:rgba(244,241,235,0.92);--nav-bg:rgba(244,241,235,0.96);
-  --hero-fallback:linear-gradient(135deg,#e8f5e9,#f1f8e9,#fff8e1);
-  --formula-bg:rgba(61,139,55,0.05);--formula-border:rgba(61,139,55,0.15);--formula-text:#2d6a2e;
-  --insight-bg:linear-gradient(135deg,rgba(45,138,78,0.06),rgba(45,138,78,0.02));--insight-border:rgba(45,138,78,0.18);
-  --code-bg:rgba(61,139,55,0.07);--code-border:rgba(61,139,55,0.12);--code-text:#2d6a2e;
-  --action-bg:rgba(255,255,255,0.85);--action-border:rgba(0,0,0,0.06);
-  --radius:16px;--radius-sm:12px;
-  --header-h:56px;--nav-h:64px;
-  --safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);
+  --text:#2c3327;--text-dim:#5c6b56;--text-muted:#94a08e;--text-body:#4a5544;
+  --accent:#3d8b37;--accent-light:#4ea648;--accent-glow:rgba(61,139,55,0.12);--accent-soft:rgba(61,139,55,0.06);
+  --red:#c0392b;--amber:#b8860b;
+  --shadow:0 1px 8px rgba(44,51,39,0.06);--shadow-lg:0 6px 24px rgba(44,51,39,0.1);
+  --bar-bg:rgba(244,241,235,0.94);
+  --hero-fallback:linear-gradient(135deg,#e8f5e9,#f1f8e9,#fefcf3);
+  --formula-bg:#f0f7ef;--formula-border:#d4e6d2;--formula-text:#2d6a2e;
+  --insight-bg:linear-gradient(135deg,#f0f7ef,#f8faf5);--insight-border:#c8e0c5;
+  --code-bg:#eef5ed;--code-border:#d4e6d2;--code-text:#2d6a2e;
+  --toggle-bg:#e0dbd2;--toggle-fg:#ffffff;
 }
 
-@media(prefers-color-scheme:dark){
-  :root{
-    --bg:#1a1f1a;--bg-card:#232a23;--bg-card-hover:#2a332a;--bg-input:#232a23;
-    --border:#3a4a3a;--border-strong:#4a5c4a;
-    --text:#e0e8e0;--text-dim:#8fa88f;--text-muted:#5c725c;
-    --accent:#6abf62;--accent-light:#82d47a;--accent-glow:rgba(106,191,98,0.18);--accent-soft:rgba(106,191,98,0.08);
-    --green:#6abf62;--red:#ff6b6b;--amber:#ffd43b;--blue:#74c0fc;
-    --pink:#f06595;--orange:#ff922b;--cyan:#66d9e8;
-    --shadow:0 2px 12px rgba(0,0,0,0.2);--shadow-lg:0 8px 30px rgba(0,0,0,0.3);
-    --header-bg:rgba(26,31,26,0.92);--nav-bg:rgba(26,31,26,0.96);
-    --hero-fallback:linear-gradient(135deg,#1e2a1e,#232a23,#2a2a1e);
-    --formula-bg:rgba(106,191,98,0.06);--formula-border:rgba(106,191,98,0.15);--formula-text:#82d47a;
-    --insight-bg:linear-gradient(135deg,rgba(106,191,98,0.08),rgba(106,191,98,0.03));--insight-border:rgba(106,191,98,0.2);
-    --code-bg:rgba(106,191,98,0.08);--code-border:rgba(106,191,98,0.12);--code-text:#82d47a;
-    --action-bg:rgba(35,42,35,0.85);--action-border:rgba(255,255,255,0.06);
-  }
+/* ── DARK THEME ── */
+[data-theme="dark"]{
+  --bg:#1a1f1a;--bg-card:#242b24;--bg-card-hover:#2c352c;--bg-input:#242b24;
+  --border:#3a4a3a;--border-strong:#4a5c4a;
+  --text:#e0e8dc;--text-dim:#a0b49a;--text-muted:#687868;--text-body:#bcc8b8;
+  --accent:#6abf62;--accent-light:#7ed476;--accent-glow:rgba(106,191,98,0.15);--accent-soft:rgba(106,191,98,0.06);
+  --red:#ff6b6b;--amber:#ffd43b;
+  --shadow:0 1px 8px rgba(0,0,0,0.2);--shadow-lg:0 6px 24px rgba(0,0,0,0.3);
+  --bar-bg:rgba(26,31,26,0.94);
+  --hero-fallback:linear-gradient(135deg,#1e2a1e,#242b24,#2a2a1e);
+  --formula-bg:rgba(106,191,98,0.06);--formula-border:rgba(106,191,98,0.15);--formula-text:#7ed476;
+  --insight-bg:linear-gradient(135deg,rgba(106,191,98,0.07),rgba(106,191,98,0.02));--insight-border:rgba(106,191,98,0.2);
+  --code-bg:rgba(106,191,98,0.08);--code-border:rgba(106,191,98,0.12);--code-text:#7ed476;
+  --toggle-bg:#3a4a3a;--toggle-fg:#6abf62;
 }
+
+:root{--radius:16px;--radius-sm:12px;--header-h:56px;--nav-h:60px;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
 
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
 html,body{height:100%;overflow:hidden}
-body{font-family:'Nunito',-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;transition:background 0.3s,color 0.3s}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;transition:background 0.4s ease,color 0.4s ease}
 ::-webkit-scrollbar{display:none}*{scrollbar-width:none}
 #app{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
 
 /* ── AUTH ── */
-.auth-screen{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 28px;text-align:center;background:var(--bg)}
-.auth-logo{font-size:56px;margin-bottom:14px;animation:float 4s ease-in-out infinite}
-@keyframes float{0%,100%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-8px) rotate(-2deg)}75%{transform:translateY(-4px) rotate(2deg)}}
-.auth-title{font-size:34px;font-weight:700;font-family:'Lora',Georgia,serif;letter-spacing:-0.5px;margin-bottom:4px;color:var(--accent)}
+.auth-screen{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 28px;text-align:center}
+.auth-logo{font-size:52px;margin-bottom:12px}
+.auth-title{font-size:32px;font-weight:700;font-family:'Lora',Georgia,serif;color:var(--accent);margin-bottom:2px}
 .auth-sub{font-size:14px;color:var(--text-dim);margin-bottom:32px;line-height:1.6}
 .auth-form{width:100%;max-width:340px}
-.auth-input{width:100%;padding:14px 18px;background:var(--bg-input);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'Nunito',sans-serif;font-size:16px;outline:none;transition:border-color 0.3s,box-shadow 0.3s;margin-bottom:12px;-webkit-appearance:none}
+.auth-input{width:100%;padding:14px 18px;background:var(--bg-input);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'Nunito',sans-serif;font-size:16px;outline:none;transition:all 0.3s;margin-bottom:12px;-webkit-appearance:none;box-shadow:var(--shadow)}
 .auth-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
 .auth-input::placeholder{color:var(--text-muted)}
-.auth-btn{width:100%;padding:15px;border:none;border-radius:50px;background:var(--accent);color:white;font-family:'Nunito',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all 0.3s;box-shadow:var(--shadow-lg);margin-top:4px}
-.auth-btn:hover{background:var(--accent-light)}
+.auth-btn{width:100%;padding:15px;border:none;border-radius:50px;background:var(--accent);color:#fff;font-family:'Nunito',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all 0.3s;box-shadow:var(--shadow-lg);margin-top:4px}
 .auth-btn:active{transform:scale(0.97)}
 .auth-toggle{margin-top:18px;font-size:13px;color:var(--text-dim)}
 .auth-toggle span{color:var(--accent);cursor:pointer;font-weight:700}
 .auth-error{color:var(--red);font-size:13px;margin-bottom:10px;min-height:18px}
 
 /* ── HEADER ── */
-.header{flex-shrink:0;display:flex;justify-content:space-between;align-items:center;padding:0 16px;height:calc(var(--header-h) + var(--safe-top));padding-top:var(--safe-top);background:var(--header-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);position:relative;z-index:50}
-.header-left{display:flex;align-items:center;gap:10px}
-.logo-icon{font-size:26px}
-.header-left h1{font-size:22px;font-weight:700;font-family:'Lora',Georgia,serif;color:var(--accent);letter-spacing:-0.3px}
-.header-right{display:flex;gap:8px;align-items:center}
-.hdr-btn{height:36px;border-radius:20px;background:var(--bg-card);border:1px solid var(--border);color:var(--text-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;transition:all 0.2s;padding:0 14px;gap:6px;font-family:'Nunito',sans-serif;font-weight:700;box-shadow:var(--shadow)}
-.hdr-btn:active{transform:scale(0.94);background:var(--bg-card-hover)}
-.hdr-avatar{width:26px;height:26px;border-radius:50%;background:var(--accent);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+.header{flex-shrink:0;display:flex;justify-content:space-between;align-items:center;padding:0 16px;height:calc(var(--header-h) + var(--safe-top));padding-top:var(--safe-top);background:var(--bar-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);z-index:50}
+.header-left{display:flex;align-items:center;gap:8px}
+.header-left h1{font-size:20px;font-weight:700;font-family:'Lora',Georgia,serif;color:var(--accent)}
+.header-right{display:flex;gap:6px;align-items:center}
+.hdr-btn{height:34px;border-radius:20px;background:var(--bg-card);border:1px solid var(--border);color:var(--text-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;padding:0 12px;gap:5px;font-family:'Nunito',sans-serif;font-weight:700;box-shadow:var(--shadow);transition:all 0.2s}
+.hdr-btn:active{transform:scale(0.94)}
+.hdr-avatar{width:24px;height:24px;border-radius:50%;background:var(--accent);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800}
+
+/* ── THEME TOGGLE ── */
+.theme-toggle{width:34px;height:34px;border-radius:50%;background:var(--bg-card);border:1px solid var(--border);color:var(--text-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;box-shadow:var(--shadow);transition:all 0.2s}
+.theme-toggle:active{transform:scale(0.9)}
 
 /* ── BOTTOM NAV ── */
-.bottom-nav{flex-shrink:0;display:flex;justify-content:space-around;align-items:center;height:calc(var(--nav-h) + var(--safe-bottom));padding-bottom:var(--safe-bottom);background:var(--nav-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);z-index:50}
-.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 16px;cursor:pointer;transition:all 0.2s;border-radius:14px;position:relative}
+.bottom-nav{flex-shrink:0;display:flex;justify-content:space-around;align-items:center;height:calc(var(--nav-h) + var(--safe-bottom));padding-bottom:var(--safe-bottom);background:var(--bar-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);z-index:50}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 18px;cursor:pointer;border-radius:14px;position:relative;transition:all 0.2s}
 .nav-item:active{transform:scale(0.9)}
-.nav-icon{font-size:22px;transition:all 0.2s}
-.nav-label{font-size:10px;font-weight:700;color:var(--text-muted);transition:all 0.2s;letter-spacing:0.3px}
+.nav-icon{font-size:22px}
+.nav-label{font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:0.3px}
 .nav-item.active{background:var(--accent-soft)}
-.nav-item.active .nav-icon{transform:scale(1.1)}
 .nav-item.active .nav-label{color:var(--accent)}
-.saved-count{position:absolute;top:0;right:6px;min-width:16px;height:16px;border-radius:8px;background:var(--red);color:white;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px}
+.saved-count{position:absolute;top:0;right:8px;min-width:16px;height:16px;border-radius:8px;background:var(--red);color:white;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px}
 
 .main{flex:1;overflow:hidden;position:relative}
 
-/* ── REELS ── */
-.reels-container{height:100%;overflow:hidden;position:relative;touch-action:pan-y}
-.reel-slide{height:100%;width:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;position:absolute;top:0;left:0;display:flex;flex-direction:column;transition:transform 0.35s ease,opacity 0.35s ease}
-.reel-slide::-webkit-scrollbar{display:none}
-.reel-slide.slide-out-left{transform:translateX(-100%);opacity:0}
-.reel-slide.slide-out-right{transform:translateX(100%);opacity:0}
-.reel-slide.slide-in-left{animation:slideFromRight 0.35s ease forwards}
-.reel-slide.slide-in-right{animation:slideFromLeft 0.35s ease forwards}
-@keyframes slideFromRight{from{transform:translateX(50px);opacity:0}to{transform:translateX(0);opacity:1}}
-@keyframes slideFromLeft{from{transform:translateX(-50px);opacity:0}to{transform:translateX(0);opacity:1}}
+/* ── READER ── */
+.reader{height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.reader::-webkit-scrollbar{display:none}
+.reader-inner{max-width:640px;margin:0 auto;padding:20px 22px 100px}
 
-.reel-content{flex:1;padding:20px 20px 24px;display:flex;flex-direction:column;min-height:100%}
-.reel-topic-bar{display:flex;align-items:center;gap:10px;margin-bottom:18px}
-.reel-topic-icon{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;box-shadow:var(--shadow)}
-.reel-topic-name{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1px}
-.reel-topic-meta{font-size:11px;color:var(--text-muted);margin-top:2px;font-weight:500}
-.reel-difficulty{margin-left:auto;padding:5px 12px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
-.reel-title{font-size:26px;font-weight:700;font-family:'Lora',Georgia,serif;line-height:1.3;letter-spacing:-0.3px;margin-bottom:18px;color:var(--text)}
-.reel-hero-image{width:calc(100% + 40px);margin-left:-20px;margin-bottom:20px;height:220px;object-fit:cover;border-radius:0;background:var(--hero-fallback)}
+.book-hero-img{width:calc(100% + 44px);margin:-20px -22px 24px;height:240px;object-fit:cover;background:var(--hero-fallback)}
+.book-category{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:14px}
+.book-title{font-size:30px;font-weight:700;font-family:'Lora',Georgia,serif;line-height:1.25;letter-spacing:-0.3px;margin-bottom:6px}
+.book-author{font-size:16px;color:var(--text-dim);font-weight:500;margin-bottom:4px}
+.book-meta{font-size:13px;color:var(--text-muted);margin-bottom:6px;display:flex;gap:12px;flex-wrap:wrap}
+.book-oneliner{font-size:15px;color:var(--text-dim);font-style:italic;font-family:'Lora',Georgia,serif;line-height:1.6;margin:16px 0 24px;padding:16px 20px;border-left:3px solid var(--accent);background:var(--accent-soft);border-radius:0 var(--radius-sm) var(--radius-sm) 0}
 
-.reel-body{flex:1}
-.reel-body p{margin-bottom:16px;font-size:15.5px;line-height:1.85;color:var(--text-dim);font-weight:400}
-.reel-body h3{font-size:18px;font-weight:700;font-family:'Lora',Georgia,serif;color:var(--text);margin:28px 0 12px;padding-left:14px;border-left:3px solid var(--accent);border-radius:0 4px 4px 0}
-.reel-body strong{color:var(--text);font-weight:700}
-.reel-body code{background:var(--code-bg);padding:3px 8px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--code-text);border:1px solid var(--code-border)}
-.reel-body .formula-block{background:var(--formula-bg);border:1px solid var(--formula-border);border-radius:var(--radius-sm);padding:18px 20px;margin:18px 0;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--formula-text);line-height:1.9;overflow-x:auto}
-.reel-body .key-insight{background:var(--insight-bg);border:1px solid var(--insight-border);border-radius:var(--radius-sm);padding:18px 20px;margin:18px 0;font-size:14.5px;line-height:1.75}
-.reel-body .key-insight::before{content:'🌿 Key Insight';display:block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:var(--green);margin-bottom:8px;font-family:'Nunito',sans-serif}
+/* ── READING TYPOGRAPHY ── */
+.book-body p{margin-bottom:18px;font-size:16.5px;line-height:1.9;color:var(--text-body);font-family:'Lora',Georgia,serif;font-weight:400}
+.book-body h2{font-size:22px;font-weight:700;font-family:'Lora',Georgia,serif;color:var(--text);margin:36px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+.book-body h3{font-size:18px;font-weight:600;font-family:'Lora',Georgia,serif;color:var(--text);margin:28px 0 10px;padding-left:14px;border-left:3px solid var(--accent)}
+.book-body strong{color:var(--text);font-weight:600}
+.book-body em{font-style:italic;color:var(--text-dim)}
+.book-body code{background:var(--code-bg);padding:3px 8px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--code-text);border:1px solid var(--code-border)}
+.book-body .formula-block{background:var(--formula-bg);border:1px solid var(--formula-border);border-radius:var(--radius-sm);padding:18px 20px;margin:20px 0;font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--formula-text);line-height:1.9}
+.book-body .key-insight{background:var(--insight-bg);border:1px solid var(--insight-border);border-radius:var(--radius-sm);padding:20px;margin:22px 0;font-size:15.5px;line-height:1.8;font-family:'Lora',Georgia,serif}
+.book-body .key-insight::before{content:'🌿 Key Insight';display:block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:var(--accent);margin-bottom:10px;font-family:'Nunito',sans-serif}
 
-/* ── ACTIONS ── */
-.reel-actions{position:fixed;right:14px;bottom:calc(var(--nav-h) + var(--safe-bottom) + 20px);display:flex;flex-direction:column;gap:16px;z-index:40;align-items:center}
-.reel-action-btn{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:all 0.2s}
-.reel-action-btn:active{transform:scale(0.85)}
-.reel-action-icon{width:48px;height:48px;border-radius:50%;background:var(--action-bg);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid var(--action-border);transition:all 0.3s;box-shadow:var(--shadow)}
-.reel-action-icon.liked{background:rgba(192,57,43,0.12);border-color:rgba(192,57,43,0.25)}
-.reel-action-icon.saved{background:rgba(212,160,23,0.12);border-color:rgba(212,160,23,0.25)}
-.reel-action-label{font-size:10px;font-weight:700;color:var(--text-muted)}
-
-/* ── SWIPE HINT ── */
-.swipe-hint{position:fixed;bottom:calc(var(--nav-h) + var(--safe-bottom) + 8px);left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:4px;animation:bounceHint 2.5s ease infinite;z-index:30;pointer-events:none;background:var(--action-bg);backdrop-filter:blur(10px);padding:6px 14px;border-radius:20px;border:1px solid var(--action-border)}
-@keyframes bounceHint{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-6px)}}
-
-/* ── PROGRESS ── */
-.progress-bar{position:fixed;top:calc(var(--header-h) + var(--safe-top) + 8px);left:16px;right:16px;display:flex;gap:4px;z-index:40}
-.progress-seg{flex:1;height:3px;border-radius:2px;background:var(--border);overflow:hidden;min-width:4px}
-.progress-seg.done{background:var(--accent)}
-.progress-seg.active .pfill{height:100%;background:var(--accent);border-radius:2px;animation:pgrow 15s linear forwards}
-@keyframes pgrow{from{width:0}to{width:100%}}
-
-/* ── PAGE / SCROLL ── */
-.page-container{height:100%;overflow-y:auto;padding:16px}
-.page-container::-webkit-scrollbar{display:none}
-.section-title{font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
-
-/* ── ONBOARDING ── */
-.onboarding{height:100%;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
-.ob-header{padding:20px 24px 0;text-align:center;flex-shrink:0}
-.ob-title{font-size:22px;font-weight:700;font-family:'Lora',Georgia,serif;margin-bottom:4px;color:var(--accent)}
-.ob-sub{font-size:13px;color:var(--text-dim);margin-bottom:12px;line-height:1.5}
-.ob-search{display:flex;align-items:center;gap:10px;padding:11px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin:0 24px 4px;transition:border-color 0.2s,box-shadow 0.2s;box-shadow:var(--shadow)}
-.ob-search:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
-.ob-search input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'Nunito',sans-serif;font-size:15px}
-.ob-search input::placeholder{color:var(--text-muted)}
-.ob-count{padding:4px 24px 2px;font-size:12px;color:var(--text-dim);flex-shrink:0;font-weight:600}
-.ob-count strong{color:var(--accent)}
-.ob-scroll{flex:1;overflow-y:auto;padding:6px 24px 120px;-webkit-overflow-scrolling:touch}
-.ob-scroll::-webkit-scrollbar{display:none}
-.ob-cat{font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin:14px 0 6px}
-.ob-cat:first-child{margin-top:2px}
-.ob-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:2px}
-.ob-t{padding:10px 6px;border-radius:var(--radius-sm);border:2px solid var(--border);background:var(--bg-card);cursor:pointer;transition:all 0.25s;text-align:center;position:relative;box-shadow:var(--shadow)}
-.ob-t:active{transform:scale(0.95)}
-.ob-t.sel{border-color:var(--accent);background:var(--accent-soft)}
-.ob-t-i{font-size:22px;margin-bottom:3px;display:block}
-.ob-t-l{font-size:10px;font-weight:600;color:var(--text-dim);display:block;line-height:1.25}
-.ob-t.sel .ob-t-l{color:var(--text);font-weight:700}
-.ob-t-c{position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;background:var(--accent);color:white;font-size:9px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s}
-.ob-t.sel .ob-t-c{opacity:1}
-.ob-footer{position:fixed;bottom:0;left:0;right:0;padding:10px 24px calc(14px + var(--safe-bottom));background:linear-gradient(transparent,var(--bg) 30%);z-index:10}
-.ob-start{width:100%;padding:15px;border:none;border-radius:50px;font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;cursor:pointer;transition:all 0.3s}
-.ob-start.ready{background:var(--accent);color:white;box-shadow:var(--shadow-lg)}
-.ob-start.ready:hover{background:var(--accent-light)}
-.ob-start:not(.ready){background:var(--bg-card);color:var(--text-muted);border:1px solid var(--border);cursor:default}
-
-/* ── EXPLORE ── */
-.explore-search{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:12px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);transition:border-color 0.2s;box-shadow:var(--shadow)}
-.explore-search:focus-within{border-color:var(--accent)}
-.explore-search input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'Nunito',sans-serif;font-size:15px}
-.explore-search input::placeholder{color:var(--text-muted)}
-.topic-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
-.tcard{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 12px;cursor:pointer;transition:all 0.25s;position:relative;overflow:hidden;box-shadow:var(--shadow)}
-.tcard:active{transform:scale(0.96)}
-.tcard.sub{border-color:var(--accent);background:var(--accent-soft)}
-.tcard-chk{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px}
-.tcard.sub .tcard-chk{background:var(--accent);color:white}
-.tcard:not(.sub) .tcard-chk{background:var(--bg);border:1.5px solid var(--border);color:transparent}
-
-/* ── SAVED ── */
-.saved-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px;cursor:pointer;transition:all 0.2s;display:flex;gap:12px;box-shadow:var(--shadow)}
-.saved-card:active{transform:scale(0.98);background:var(--bg-card-hover)}
-.saved-card-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-.saved-card-info{flex:1;min-width:0}
-.saved-card-title{font-size:14px;font-weight:700;font-family:'Lora',Georgia,serif;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.saved-card-meta{font-size:11px;color:var(--text-dim);font-weight:500}
-.saved-card-rm{align-self:center;color:var(--text-muted);font-size:18px;cursor:pointer;padding:6px;border-radius:8px}
-
-/* ── LOADING ── */
-.loading-reel{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:40px}
-.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-.empty-state{text-align:center;padding:60px 24px}
-.empty-state-icon{font-size:48px;margin-bottom:14px}
-.empty-state-title{font-size:18px;font-weight:700;font-family:'Lora',Georgia,serif;color:var(--text-dim);margin-bottom:7px}
-.empty-state-desc{font-size:13px;color:var(--text-muted);line-height:1.6}
+/* ── ACTIONS BAR (bottom of article) ── */
+.book-actions{display:flex;gap:10px;margin-top:32px;padding-top:20px;border-top:1px solid var(--border)}
+.book-action{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border-radius:var(--radius-sm);background:var(--bg-card);border:1px solid var(--border);cursor:pointer;font-size:13px;font-weight:700;color:var(--text-dim);font-family:'Nunito',sans-serif;box-shadow:var(--shadow);transition:all 0.2s}
+.book-action:active{transform:scale(0.96)}
+.book-action.liked{color:var(--red);border-color:rgba(192,57,43,0.3);background:rgba(192,57,43,0.05)}
+.book-action.saved{color:var(--amber);border-color:rgba(184,134,11,0.3);background:rgba(184,134,11,0.05)}
 
 /* ── DATE NAV ── */
 .date-nav{display:flex;align-items:center;justify-content:center;gap:14px;padding:10px 16px;flex-shrink:0}
@@ -220,7 +127,27 @@ body{font-family:'Nunito',-apple-system,sans-serif;background:var(--bg);color:va
 .date-label{font-size:14px;font-weight:600;color:var(--text-dim)}
 .date-label strong{color:var(--text)}
 
-@media(min-width:600px){.reel-content{max-width:580px;margin:0 auto}.reel-actions{right:calc(50% - 310px)}}
+/* ── SAVED / LIBRARY ── */
+.page-container{height:100%;overflow-y:auto;padding:20px 18px}
+.page-container::-webkit-scrollbar{display:none}
+.section-title{font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+.saved-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;margin-bottom:10px;cursor:pointer;display:flex;gap:14px;box-shadow:var(--shadow);transition:all 0.2s}
+.saved-card:active{transform:scale(0.98);background:var(--bg-card-hover)}
+.saved-card-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.saved-card-info{flex:1;min-width:0}
+.saved-card-title{font-size:15px;font-weight:700;font-family:'Lora',Georgia,serif;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.saved-card-author{font-size:12px;color:var(--text-dim);font-weight:500}
+.saved-card-meta{font-size:11px;color:var(--text-muted);margin-top:2px}
+.saved-card-rm{align-self:center;color:var(--text-muted);font-size:18px;cursor:pointer;padding:6px;border-radius:8px}
+
+/* ── EMPTY / LOADING ── */
+.loading-reel{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:40px}
+.empty-state{text-align:center;padding:60px 24px}
+.empty-state-icon{font-size:48px;margin-bottom:14px}
+.empty-state-title{font-size:18px;font-weight:700;font-family:'Lora',Georgia,serif;color:var(--text-dim);margin-bottom:7px}
+.empty-state-desc{font-size:13px;color:var(--text-muted);line-height:1.6}
+
+@media(min-width:640px){.reader-inner{padding:28px 32px 100px}}
 </style>
 </head>
 <body>
@@ -228,197 +155,54 @@ body{font-family:'Nunito',-apple-system,sans-serif;background:var(--bg);color:va
 
 <script>
 // ═══════════════════════════════════════════════════════════════
-// INFOGRAM v5 — Nature Calm Theme
+// BOOKGRAM — Daily Book Summary Reader
 // ═══════════════════════════════════════════════════════════════
 
-const COLORS=["#3d8b37","#2d8a4e","#e17055","#2e86ab","#d4a017","#c44569","#00b4d8","#5ba854","#c0392b","#27ae60","#f39c12","#8e44ad","#1abc9c","#e74c3c","#3498db","#e67e22","#9b59b6","#16a085","#e84393","#6c5ce7","#fdcb6e","#00cec9","#a29bfe","#74b9ff","#fab1a0","#55efc4","#dfe6e9","#81ecec","#ffeaa7","#636e72"];
+const CATEGORY_COLORS={"Self Help":"#3d8b37","Motivation":"#e17055","Investing":"#2e86ab","Leadership":"#8e44ad","Business Strategy":"#d4a017","Supply Chain":"#1abc9c"};
 
-const CATEGORIES={
-  "🧠 AI & Computing":[
-    {id:"ai",label:"Artificial Intelligence",icon:"🧠",img:"artificial+intelligence+neural"},
-    {id:"machine-learning",label:"Machine Learning",icon:"🤖",img:"machine+learning+algorithm"},
-    {id:"deep-learning",label:"Deep Learning",icon:"🔮",img:"deep+learning+neural+network"},
-    {id:"robotics",label:"Robotics",icon:"🦾",img:"robot+arm+automation"},
-    {id:"computer-vision",label:"Computer Vision",icon:"👁️",img:"computer+vision+recognition"},
-    {id:"nlp",label:"Natural Language Processing",icon:"💬",img:"language+processing+chatbot"},
-    {id:"cybersecurity",label:"Cybersecurity",icon:"🔐",img:"cybersecurity+hacking+firewall"},
-    {id:"quantum-computing",label:"Quantum Computing",icon:"⚛️",img:"quantum+computer+processor"},
-    {id:"blockchain",label:"Blockchain & Crypto",icon:"⛓️",img:"blockchain+cryptocurrency"},
-    {id:"cloud-computing",label:"Cloud Computing",icon:"☁️",img:"cloud+server+data+center"},
-  ],
-  "💰 Business & Finance":[
-    {id:"investing",label:"Investing & Markets",icon:"📈",img:"stock+market+trading"},
-    {id:"startup",label:"Startups & VC",icon:"🚀",img:"startup+silicon+valley"},
-    {id:"economics",label:"Economics",icon:"💹",img:"economics+finance+market"},
-    {id:"supply-chain",label:"Supply Chain",icon:"🔗",img:"logistics+warehouse+shipping"},
-    {id:"procurement",label:"Procurement",icon:"📋",img:"procurement+contract"},
-    {id:"real-estate",label:"Real Estate",icon:"🏠",img:"real+estate+property"},
-    {id:"personal-finance",label:"Personal Finance",icon:"💳",img:"savings+money+budget"},
-    {id:"crypto-defi",label:"DeFi & Web3",icon:"🪙",img:"defi+crypto+ethereum"},
-    {id:"marketing",label:"Marketing & Growth",icon:"📣",img:"marketing+advertising"},
-    {id:"negotiation",label:"Negotiation",icon:"🤝",img:"negotiation+handshake"},
-  ],
-  "⚙️ Engineering":[
-    {id:"mechanical-eng",label:"Mechanical Engineering",icon:"⚙️",img:"engine+gears+machinery"},
-    {id:"electrical-eng",label:"Electrical Engineering",icon:"⚡",img:"circuit+board+electronics"},
-    {id:"civil-eng",label:"Civil Engineering",icon:"🏗️",img:"bridge+construction"},
-    {id:"aerospace",label:"Aerospace",icon:"✈️",img:"jet+engine+aerospace"},
-    {id:"automotive",label:"Automotive",icon:"🏎️",img:"car+engine+turbo"},
-    {id:"3d-printing",label:"3D Printing",icon:"🖨️",img:"3d+printing+manufacturing"},
-    {id:"materials-sci",label:"Materials Science",icon:"🔬",img:"materials+alloy+microscope"},
-    {id:"renewable-energy",label:"Renewable Energy",icon:"☀️",img:"solar+wind+turbine"},
-    {id:"nuclear-energy",label:"Nuclear Energy",icon:"☢️",img:"nuclear+power+reactor"},
-    {id:"naval-eng",label:"Naval Engineering",icon:"🚢",img:"ship+engineering+naval"},
-  ],
-  "🔬 Science":[
-    {id:"physics",label:"Physics",icon:"🔭",img:"physics+particle+accelerator"},
-    {id:"chemistry",label:"Chemistry",icon:"🧪",img:"chemistry+molecules+lab"},
-    {id:"biology",label:"Biology",icon:"🧬",img:"biology+cell+microscope"},
-    {id:"astronomy",label:"Astronomy",icon:"🌌",img:"space+galaxy+nebula"},
-    {id:"geology",label:"Geology",icon:"🌋",img:"volcano+geology+earth"},
-    {id:"ocean-science",label:"Ocean Science",icon:"🌊",img:"ocean+research+submarine"},
-    {id:"climate-science",label:"Climate Science",icon:"🌡️",img:"climate+earth+atmosphere"},
-    {id:"neuroscience",label:"Neuroscience",icon:"🧠",img:"brain+neuron+synapse"},
-    {id:"genetics",label:"Genetics",icon:"🧬",img:"dna+genetics+genome"},
-    {id:"paleontology",label:"Paleontology",icon:"🦖",img:"dinosaur+fossil"},
-  ],
-  "🔢 Mathematics":[
-    {id:"mathematics",label:"Pure Mathematics",icon:"∑",img:"mathematics+fractal"},
-    {id:"statistics",label:"Statistics",icon:"📊",img:"statistics+data+chart"},
-    {id:"game-theory",label:"Game Theory",icon:"♟️",img:"chess+strategy"},
-    {id:"cryptography",label:"Cryptography",icon:"🔑",img:"cryptography+cipher"},
-    {id:"topology",label:"Topology",icon:"🍩",img:"topology+mobius+geometry"},
-  ],
-  "🏥 Health & Medicine":[
-    {id:"medicine",label:"Medicine",icon:"🏥",img:"hospital+surgery+medical"},
-    {id:"nutrition",label:"Nutrition",icon:"🥗",img:"nutrition+healthy+food"},
-    {id:"psychology",label:"Psychology",icon:"🧠",img:"psychology+mind+therapy"},
-    {id:"pharmacology",label:"Pharmacology",icon:"💊",img:"pharmacy+medicine+drug"},
-    {id:"epidemiology",label:"Epidemiology",icon:"🦠",img:"virus+pandemic+disease"},
-    {id:"fitness-science",label:"Exercise Science",icon:"🏋️",img:"fitness+gym+exercise"},
-    {id:"longevity",label:"Longevity",icon:"⏳",img:"aging+longevity+science"},
-    {id:"biotech",label:"Biotech",icon:"🧫",img:"biotech+laboratory+gene"},
-  ],
-  "🚀 Space":[
-    {id:"space-exploration",label:"Space Exploration",icon:"🛸",img:"space+shuttle+launch"},
-    {id:"moon-missions",label:"Moon Missions",icon:"🌙",img:"moon+landing+lunar"},
-    {id:"mars-colonization",label:"Mars Colonization",icon:"🔴",img:"mars+planet+rover"},
-    {id:"black-holes",label:"Black Holes",icon:"🕳️",img:"black+hole+cosmos"},
-    {id:"satellites",label:"Satellites & GPS",icon:"🛰️",img:"satellite+orbit+earth"},
-    {id:"astrobiology",label:"Alien Life",icon:"👽",img:"alien+exoplanet+telescope"},
-  ],
-  "🌍 Geopolitics & History":[
-    {id:"geopolitics",label:"Geopolitics",icon:"🌍",img:"geopolitics+world+map"},
-    {id:"ancient-history",label:"Ancient Civilizations",icon:"🏛️",img:"ancient+rome+egypt"},
-    {id:"world-wars",label:"World Wars",icon:"⚔️",img:"world+war+military"},
-    {id:"cold-war",label:"Cold War",icon:"🕵️",img:"cold+war+spy+berlin"},
-    {id:"conspiracy",label:"Conspiracy Theories",icon:"🔺",img:"conspiracy+mystery+eye"},
-    {id:"intelligence",label:"Intelligence Agencies",icon:"🕶️",img:"spy+intelligence+secret"},
-    {id:"empires",label:"Rise & Fall of Empires",icon:"👑",img:"empire+castle+kingdom"},
-    {id:"future-war",label:"Future of Warfare",icon:"🎯",img:"military+drone+warfare"},
-  ],
-  "🎨 Design & Creativity":[
-    {id:"ux-design",label:"UX/UI Design",icon:"🎨",img:"ux+design+interface"},
-    {id:"architecture",label:"Architecture",icon:"🏛️",img:"architecture+modern+building"},
-    {id:"photography",label:"Photography",icon:"📷",img:"photography+camera+lens"},
-    {id:"filmmaking",label:"Filmmaking",icon:"🎬",img:"filmmaking+cinema+director"},
-    {id:"music-theory",label:"Music Theory",icon:"🎵",img:"music+piano+notes"},
-    {id:"game-design",label:"Game Design",icon:"🎮",img:"game+design+controller"},
-  ],
-  "🧘 Philosophy & Mind":[
-    {id:"philosophy",label:"Philosophy",icon:"🤔",img:"philosophy+thinker+wisdom"},
-    {id:"consciousness",label:"Consciousness",icon:"✨",img:"consciousness+mind+light"},
-    {id:"stoicism",label:"Stoicism",icon:"🏛️",img:"stoic+statue+philosophy"},
-    {id:"decision-making",label:"Decision Making",icon:"⚖️",img:"decision+brain+choices"},
-    {id:"sleep-science",label:"Sleep Science",icon:"😴",img:"sleep+brain+dreams"},
-    {id:"meditation",label:"Meditation",icon:"🧘",img:"meditation+zen+peaceful"},
-  ],
-  "🌊 Animals & Nature":[
-    {id:"ocean-mammals",label:"Ocean Mammals",icon:"🐬",img:"dolphin+whale+ocean"},
-    {id:"predators",label:"Apex Predators",icon:"🦁",img:"lion+predator+wildlife"},
-    {id:"deep-sea",label:"Deep Sea Mysteries",icon:"🦑",img:"deep+sea+anglerfish"},
-    {id:"rainforests",label:"Rainforests",icon:"🌴",img:"rainforest+tropical+jungle"},
-    {id:"animal-intelligence",label:"Animal Intelligence",icon:"🐙",img:"octopus+intelligent"},
-    {id:"extinction",label:"Extinction",icon:"🦤",img:"endangered+conservation"},
-  ],
-  "🏗️ Infrastructure":[
-    {id:"mega-projects",label:"Mega Projects",icon:"🌉",img:"bridge+dam+mega"},
-    {id:"urban-planning",label:"Urban Planning",icon:"🏙️",img:"city+skyline+urban"},
-    {id:"transportation",label:"Transportation",icon:"🚄",img:"bullet+train+railway"},
-    {id:"water-systems",label:"Water Systems",icon:"💧",img:"water+dam+reservoir"},
-    {id:"power-grid",label:"Power Grid",icon:"🔌",img:"power+grid+electricity"},
-  ],
-  "🍕 Food & Agriculture":[
-    {id:"food-science",label:"Food Science",icon:"🍕",img:"food+science+molecular"},
-    {id:"fermentation",label:"Fermentation",icon:"🍺",img:"fermentation+brewing"},
-    {id:"agriculture",label:"Agriculture",icon:"🌾",img:"farm+agriculture+harvest"},
-    {id:"food-supply",label:"Global Food Systems",icon:"🌽",img:"food+supply+global"},
-  ],
-  "📡 Tech & Hardware":[
-    {id:"semiconductors",label:"Semiconductors",icon:"💽",img:"semiconductor+chip+silicon"},
-    {id:"ev-tech",label:"Electric Vehicles",icon:"🔋",img:"electric+car+tesla+battery"},
-    {id:"ar-vr",label:"AR/VR",icon:"🥽",img:"virtual+reality+headset"},
-    {id:"drones",label:"Drones",icon:"🚁",img:"drone+uav+aerial"},
-    {id:"biocomputing",label:"Biocomputing",icon:"🧫",img:"biocomputing+dna+molecular"},
-    {id:"internet-infra",label:"Internet Infrastructure",icon:"🌐",img:"internet+cable+fiber"},
-  ],
-  "🏆 Sports":[
-    {id:"sports-analytics",label:"Sports Analytics",icon:"📊",img:"sports+analytics+stadium"},
-    {id:"f1",label:"Formula 1",icon:"🏎️",img:"formula+one+racing"},
-    {id:"human-performance",label:"Human Performance",icon:"🏃",img:"athlete+performance"},
-    {id:"sports-psychology",label:"Sports Psychology",icon:"🧠",img:"athlete+mental+focus"},
-  ],
-  "📚 Learning & Leadership":[
-    {id:"memory-learning",label:"Memory & Learning",icon:"📖",img:"memory+brain+study"},
-    {id:"speed-reading",label:"Speed Reading",icon:"📚",img:"books+library+reading"},
-    {id:"systems-thinking",label:"Systems Thinking",icon:"🔄",img:"systems+diagram+flow"},
-    {id:"leadership",label:"Leadership",icon:"👔",img:"leadership+ceo+meeting"},
-  ],
-};
-
-const TOPICS=[];let _ci=0;
-for(const[cat,items] of Object.entries(CATEGORIES)){for(const item of items){TOPICS.push({...item,color:COLORS[_ci%COLORS.length],category:cat});_ci++}}
-const TOPIC_MAP={};TOPICS.forEach(t=>TOPIC_MAP[t.id]=t);
+// ── THEME ──
+function getTheme(){return localStorage.getItem("bg-theme")||"light"}
+function setTheme(t){localStorage.setItem("bg-theme",t);document.documentElement.setAttribute("data-theme",t);document.querySelector('meta[name="theme-color"]').content=t==="dark"?"#1a1f1a":"#f4f1eb"}
+function toggleTheme(){setTheme(getTheme()==="light"?"dark":"light");render()}
+setTheme(getTheme());
 
 // ── STATE ──
 let user=null;
-let S={view:"feed",topics:[],weights:{},savedPosts:[],likedIds:new Set(),currentIndex:0,swipeHintShown:false,_obSel:[],_obQ:"",_exQ:""};
+let S={view:"read",savedPosts:[],likedIds:new Set()};
 let posts=[];let loadedDate="";
 
 // ── AUTH ──
 function hashPw(pw){let h=0;for(let i=0;i<pw.length;i++)h=((h<<5)-h+pw.charCodeAt(i))|0;return h.toString(36)}
-function getUsers(){try{return JSON.parse(localStorage.getItem("ig-users")||"{}")}catch(e){return{}}}
-function saveUsers(u){localStorage.setItem("ig-users",JSON.stringify(u))}
-function login(username,password){const users=getUsers();const h=hashPw(password);if(users[username]&&users[username].hash!==h)return"Wrong password";if(!users[username])users[username]={hash:h,created:Date.now()};saveUsers(users);user={username};localStorage.setItem("ig-current",username);loadUserData();return null}
-function logout(){user=null;localStorage.removeItem("ig-current");render()}
-function loadUserData(){if(!user)return;const k="ig-u-"+user.username;try{const d=JSON.parse(localStorage.getItem(k)||"{}");S.topics=d.topics||[];S.weights=d.weights||{};S.savedPosts=d.saved||[];S.likedIds=new Set(d.liked||[]);S.view=S.topics.length?"feed":"onboarding"}catch(e){S.view="onboarding"}}
-function saveUserData(){if(!user)return;localStorage.setItem("ig-u-"+user.username,JSON.stringify({topics:S.topics,weights:S.weights,saved:S.savedPosts,liked:[...S.likedIds]}))}
+function getUsers(){try{return JSON.parse(localStorage.getItem("bg-users")||"{}")}catch(e){return{}}}
+function saveUsers(u){localStorage.setItem("bg-users",JSON.stringify(u))}
+function login(username,password){const users=getUsers();const h=hashPw(password);if(users[username]&&users[username].hash!==h)return"Wrong password";if(!users[username])users[username]={hash:h,created:Date.now()};saveUsers(users);user={username};localStorage.setItem("bg-current",username);loadUserData();return null}
+function logout(){user=null;localStorage.removeItem("bg-current");render()}
+function loadUserData(){if(!user)return;try{const d=JSON.parse(localStorage.getItem("bg-u-"+user.username)||"{}");S.savedPosts=d.saved||[];S.likedIds=new Set(d.liked||[])}catch(e){}}
+function saveUserData(){if(!user)return;localStorage.setItem("bg-u-"+user.username,JSON.stringify({saved:S.savedPosts,liked:[...S.likedIds]}))}
 
 // ── POSTS ──
-function todayStr(){const d=new Date();return d.toISOString().slice(0,10)}
+function todayStr(){return new Date().toISOString().slice(0,10)}
 function dateStr(offset){const d=new Date();d.setDate(d.getDate()+offset);return d.toISOString().slice(0,10)}
-async function loadPosts(date){if(!date)date=todayStr();loadedDate=date;try{const resp=await fetch(`posts/${date}.json?v=${Date.now()}`);if(!resp.ok)throw new Error("not found");posts=await resp.json()}catch(e){if(date===todayStr()){try{const y=dateStr(-1);const r2=await fetch(`posts/${y}.json?v=${Date.now()}`);if(r2.ok){posts=await r2.json();loadedDate=y}else posts=[]}catch(e2){posts=[]}}else posts=[]}S.currentIndex=0;sortPostsForUser();render()}
-function sortPostsForUser(){if(!S.topics.length||!posts.length)return;const us=new Set(S.topics);const mine=[],rest=[];for(const p of posts){if(us.has(p.topicId))mine.push(p);else rest.push(p)}for(let i=rest.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[rest[i],rest[j]]=[rest[j],rest[i]]}mine.sort((a,b)=>(S.weights[b.topicId]||1)-(S.weights[a.topicId]||1));posts=[...mine,...rest]}
+async function loadPosts(date){if(!date)date=todayStr();loadedDate=date;try{const r=await fetch(`posts/${date}.json?v=${Date.now()}`);if(!r.ok)throw 0;posts=await r.json()}catch(e){if(date===todayStr()){try{const r2=await fetch(`posts/${dateStr(-1)}.json?v=${Date.now()}`);if(r2.ok){posts=await r2.json();loadedDate=dateStr(-1)}else posts=[]}catch(e2){posts=[]}}else posts=[]}render()}
 
 // ── ACTIONS ──
-function boostTopic(tid){S.weights[tid]=(S.weights[tid]||1)+0.2;saveUserData()}
-function toggleLike(id,tid){if(S.likedIds.has(id))S.likedIds.delete(id);else{S.likedIds.add(id);boostTopic(tid)}saveUserData();render()}
-function toggleSave(id){if(S.savedPosts.find(p=>p.id===id)){S.savedPosts=S.savedPosts.filter(p=>p.id!==id)}else{const post=posts.find(p=>p.id===id);if(post){S.savedPosts.unshift({...post,savedAt:Date.now()});boostTopic(post.topicId)}}saveUserData();render()}
+function toggleLike(id){if(S.likedIds.has(id))S.likedIds.delete(id);else S.likedIds.add(id);saveUserData();render()}
+function toggleSave(id){if(S.savedPosts.find(p=>p.id===id)){S.savedPosts=S.savedPosts.filter(p=>p.id!==id)}else{const post=posts.find(p=>p.id===id);if(post)S.savedPosts.unshift({...post,savedAt:Date.now()})}saveUserData();render()}
 
-function formatContent(text){if(!text)return"";return text.replace(/\[FORMULA\]([\s\S]*?)\[\/FORMULA\]/g,'<div class="formula-block">$1</div>').replace(/\[INSIGHT\]([\s\S]*?)\[\/INSIGHT\]/g,'<div class="key-insight">$1</div>').replace(/^## (.+)$/gm,'<h3>$1</h3>').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code>$1</code>').split("\n").filter(l=>l.trim()).map(l=>{const t=l.trim();if(t.startsWith("<h3>")||t.startsWith("<div"))return t;return"<p>"+t+"</p>"}).join("")}
+function formatContent(text){if(!text)return"";return text.replace(/\[FORMULA\]([\s\S]*?)\[\/FORMULA\]/g,'<div class="formula-block">$1</div>').replace(/\[INSIGHT\]([\s\S]*?)\[\/INSIGHT\]/g,'<div class="key-insight">$1</div>').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code>$1</code>').split("\n").filter(l=>l.trim()).map(l=>{const t=l.trim();if(t.startsWith("<h")||t.startsWith("<div"))return t;return"<p>"+t+"</p>"}).join("")}
 
 // ═══════════════════════════════════════════════
 // RENDER
 // ═══════════════════════════════════════════════
 
-function render(){const app=document.getElementById("app");if(!user){renderAuth(app);return}if(S.view==="onboarding"){renderOnboarding(app);return}renderApp(app)}
+function render(){const app=document.getElementById("app");if(!user){renderAuth(app);return}renderApp(app)}
 
 let authMode="login",authErr="";
 function renderAuth(app){
   app.innerHTML=`<div class="auth-screen">
-    <div class="auth-logo">🌿</div>
-    <h1 class="auth-title">InfoGram</h1>
-    <p class="auth-sub">Your daily knowledge garden.<br>Fresh deep-dive articles every morning.</p>
+    <div class="auth-logo">📖</div>
+    <h1 class="auth-title">BookGram</h1>
+    <p class="auth-sub">One brilliant book summary every day.<br>20-minute deep reads that change how you think.</p>
     <div class="auth-form">
       <div class="auth-error">${authErr}</div>
       <input class="auth-input" id="authUser" type="text" placeholder="Username" autocomplete="username" autofocus>
@@ -426,97 +210,68 @@ function renderAuth(app){
       <button class="auth-btn" onclick="doAuth()">${authMode==="login"?"Sign In":"Create Account"}</button>
       <div class="auth-toggle">${authMode==="login"?`New here? <span onclick="authMode='signup';authErr='';render()">Create account</span>`:`Have an account? <span onclick="authMode='login';authErr='';render()">Sign in</span>`}</div>
     </div>
+    <div style="position:fixed;top:16px;right:16px"><div class="theme-toggle" onclick="toggleTheme()">${getTheme()==="light"?"🌙":"☀️"}</div></div>
   </div>`;
-  document.getElementById("authPw").addEventListener("keydown",e=>{if(e.key==="Enter")doAuth()});
+  document.getElementById("authPw").addEventListener("keydown",e=>{if(e.key==="Enter")doAuth()})
 }
 
 window.doAuth=function(){const u=document.getElementById("authUser").value.trim().toLowerCase();const p=document.getElementById("authPw").value;if(!u||u.length<2){authErr="Username must be at least 2 characters";render();return}if(!p||p.length<3){authErr="Password must be at least 3 characters";render();return}const users=getUsers();if(authMode==="signup"&&users[u]){authErr="Username taken. Try signing in.";render();return}if(authMode==="login"&&!users[u]){authErr="No account found. Create one first.";render();return}const err=login(u,p);if(err){authErr=err;render();return}authErr="";loadPosts()};
 
-function renderOnboarding(app){const sel=S._obSel;const q=S._obQ.toLowerCase();let catHTML="";for(const[cat,items] of Object.entries(CATEGORIES)){const filt=q?items.filter(t=>t.label.toLowerCase().includes(q)||t.id.includes(q)):items;if(!filt.length)continue;catHTML+=`<div class="ob-cat">${cat}</div><div class="ob-grid">`;for(const t of filt)catHTML+=`<div class="ob-t ${sel.includes(t.id)?'sel':''}" onclick="togOB('${t.id}')"><span class="ob-t-c">✓</span><span class="ob-t-i">${t.icon}</span><span class="ob-t-l">${t.label}</span></div>`;catHTML+=`</div>`}
-  app.innerHTML=`<div class="onboarding"><div class="ob-header"><div style="font-size:28px;margin-bottom:6px">🌿 Welcome, ${user.username}!</div><div class="ob-title">Pick Your Interests</div><p class="ob-sub">Choose 3+ topics for your personalized garden.</p></div><div class="ob-search"><span style="color:var(--text-muted)">🔍</span><input type="text" placeholder="Search ${TOPICS.length} topics..." value="${S._obQ}" oninput="S._obQ=this.value;render()"></div><div class="ob-count"><strong>${sel.length}</strong> selected${sel.length<3?` · pick ${3-sel.length} more`:' ✓'}</div><div class="ob-scroll">${catHTML}</div><div class="ob-footer"><button class="ob-start ${sel.length>=3?'ready':''}" onclick="${sel.length>=3?'finishOB()':''}">${sel.length<3?`Pick ${3-sel.length} more`:'Start Reading →'}</button></div></div>`}
-window.togOB=function(id){const i=S._obSel.indexOf(id);if(i>=0)S._obSel.splice(i,1);else S._obSel.push(id);render()};
-window.finishOB=function(){S.topics=[...S._obSel];S.weights={};S.topics.forEach(t=>S.weights[t]=1);S.view="feed";saveUserData();sortPostsForUser();render()};
-
 function renderApp(app){const v=S.view;
-  app.innerHTML=`<div class="header"><div class="header-left"><span class="logo-icon">🌿</span><h1>InfoGram</h1></div><div class="header-right"><div class="hdr-btn" onclick="logout()"><div class="hdr-avatar">${user.username[0].toUpperCase()}</div>${user.username}<span style="margin-left:4px;font-size:11px;color:var(--text-muted)">✕</span></div></div></div>
-    ${v==="feed"?renderDateNav():''}
-    <div class="main" id="mainArea">${v==="feed"?renderFeed():''}${v==="saved"?renderSaved():''}${v==="explore"?renderExplore():''}</div>
-    <div class="bottom-nav">
-      <div class="nav-item ${v==="feed"?'active':''}" onclick="nav('feed')"><span class="nav-icon">🏠</span><span class="nav-label">Feed</span></div>
-      <div class="nav-item ${v==="explore"?'active':''}" onclick="nav('explore')"><span class="nav-icon">🧭</span><span class="nav-label">Explore</span></div>
-      <div class="nav-item ${v==="saved"?'active':''}" onclick="nav('saved')" style="position:relative"><span class="nav-icon">🔖</span><span class="nav-label">Saved</span>${S.savedPosts.length?`<span class="saved-count">${S.savedPosts.length}</span>`:''}</div>
-    </div>`;
-  if(v==="feed")initSwipe()}
-window.nav=function(v){S.view=v;render()};
-
-function renderDateNav(){const isToday=loadedDate===todayStr();const d=new Date(loadedDate+"T12:00:00");const label=isToday?"Today":d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});return`<div class="date-nav"><button class="date-btn" onclick="goDate(-1)">‹</button><div class="date-label"><strong>${label}</strong> · ${posts.length} articles</div><button class="date-btn" onclick="goDate(1)" ${isToday?'disabled':''}>›</button></div>`}
-window.goDate=function(dir){const d=new Date(loadedDate+"T12:00:00");d.setDate(d.getDate()+dir);const ds=d.toISOString().slice(0,10);if(ds>todayStr())return;loadPosts(ds)};
-
-function renderFeed(){
-  if(!posts.length)return`<div class="loading-reel"><div class="empty-state-icon">🌱</div><div style="font-size:14px;color:var(--text-dim);text-align:center">No articles for this date yet.<br>Try going back a day.</div></div>`;
-  const post=posts[S.currentIndex];if(!post)return'';
-  const topic=TOPIC_MAP[post.topicId]||TOPICS[0];
-  const isSvd=S.savedPosts.some(p=>p.id===post.id);const isLkd=S.likedIds.has(post.id);
-  const isFollowed=S.topics.includes(post.topicId);
-  const imgQ=post.imageQuery||topic.img||"nature+knowledge";
-  const imgUrl=post.imageUrl||`https://source.unsplash.com/800x450/?${encodeURIComponent(imgQ)}&sig=${encodeURIComponent(post.id||post.title)}`;
-  const maxD=Math.min(posts.length,20);const dS=Math.max(0,S.currentIndex-10);const dE=Math.min(posts.length,dS+maxD);const dots=posts.slice(dS,dE);
-
-  return`
-    <div class="progress-bar">${dots.map((_,i)=>{const ri=dS+i;return`<div class="progress-seg ${ri<S.currentIndex?'done':''} ${ri===S.currentIndex?'active':''}">${ri===S.currentIndex?'<div class="pfill"></div>':''}</div>`}).join("")}</div>
-    <div class="reels-container" id="reelsC">
-      <div class="reel-slide" id="curReel">
-        <div class="reel-content">
-          <div class="reel-topic-bar">
-            <div class="reel-topic-icon" style="background:${topic.color}15;border:1px solid ${topic.color}25">${topic.icon}</div>
-            <div><div class="reel-topic-name" style="color:${topic.color}">${topic.label}${isFollowed?'':' <span style="font-size:9px;opacity:0.5;font-weight:400;letter-spacing:0">· discover</span>'}</div><div class="reel-topic-meta">${post.readTime||'5'} min read · ${post.difficulty||'Deep Dive'}</div></div>
-            <span class="reel-difficulty" style="background:${topic.color}12;color:${topic.color};border:1px solid ${topic.color}20">${S.currentIndex+1}/${posts.length}</span>
-          </div>
-          <img class="reel-hero-image" src="${imgUrl}" alt="" onerror="this.style.display='none'" loading="eager">
-          <h2 class="reel-title">${post.title}</h2>
-          <div class="reel-body">${formatContent(post.content)}</div>
-          <div style="height:100px;flex-shrink:0"></div>
-        </div>
+  app.innerHTML=`
+    <div class="header">
+      <div class="header-left"><span style="font-size:22px">📖</span><h1>BookGram</h1></div>
+      <div class="header-right">
+        <div class="theme-toggle" onclick="toggleTheme()">${getTheme()==="light"?"🌙":"☀️"}</div>
+        <div class="hdr-btn" onclick="logout()"><div class="hdr-avatar">${user.username[0].toUpperCase()}</div><span style="font-size:11px;color:var(--text-muted)">✕</span></div>
       </div>
     </div>
-    <div class="reel-actions">
-      <div class="reel-action-btn" onclick="toggleLike('${post.id}','${post.topicId}');render()"><div class="reel-action-icon ${isLkd?'liked':''}">${isLkd?'❤️':'🤍'}</div><span class="reel-action-label">${isLkd?'Liked':'Like'}</span></div>
-      <div class="reel-action-btn" onclick="toggleSave('${post.id}');render()"><div class="reel-action-icon ${isSvd?'saved':''}">${isSvd?'🔖':'📑'}</div><span class="reel-action-label">${isSvd?'Saved':'Save'}</span></div>
-      <div class="reel-action-btn" onclick="shareP('${post.id}')"><div class="reel-action-icon">↗️</div><span class="reel-action-label">Share</span></div>
+    ${v==="read"?renderDateNav():''}
+    <div class="main">${v==="read"?renderReader():''}${v==="saved"?renderSaved():''}</div>
+    <div class="bottom-nav">
+      <div class="nav-item ${v==="read"?'active':''}" onclick="S.view='read';render()"><span class="nav-icon">📖</span><span class="nav-label">Today</span></div>
+      <div class="nav-item ${v==="saved"?'active':''}" onclick="S.view='saved';render()" style="position:relative"><span class="nav-icon">🔖</span><span class="nav-label">Library</span>${S.savedPosts.length?`<span class="saved-count">${S.savedPosts.length}</span>`:''}</div>
+    </div>`}
+
+function renderDateNav(){const isToday=loadedDate===todayStr();const d=new Date(loadedDate+"T12:00:00");const label=isToday?"Today's Read":d.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});return`<div class="date-nav"><button class="date-btn" onclick="goDate(-1)">‹</button><div class="date-label"><strong>${label}</strong></div><button class="date-btn" onclick="goDate(1)" ${isToday?'disabled':''}>›</button></div>`}
+window.goDate=function(dir){const d=new Date(loadedDate+"T12:00:00");d.setDate(d.getDate()+dir);const ds=d.toISOString().slice(0,10);if(ds>todayStr())return;loadPosts(ds)};
+
+function renderReader(){
+  if(!posts.length)return`<div class="loading-reel"><div class="empty-state-icon">📚</div><div class="empty-state-title">No summary for this date</div><div class="empty-state-desc">Try going back a day — a new summary<br>is generated every morning.</div></div>`;
+
+  const post=posts[0];
+  const color=post.color||CATEGORY_COLORS[post.category]||"#3d8b37";
+  const isLkd=S.likedIds.has(post.id);const isSvd=S.savedPosts.some(p=>p.id===post.id);
+  const imgQ=post.imageQuery||"books+reading+cozy";
+  const imgUrl=post.imageUrl||`https://source.unsplash.com/800x480/?${encodeURIComponent(imgQ)}&sig=${encodeURIComponent(post.id)}`;
+
+  return`<div class="reader"><div class="reader-inner">
+    <img class="book-hero-img" src="${imgUrl}" alt="" onerror="this.style.display='none'" loading="eager">
+    <div class="book-category" style="background:${color}12;color:${color};border:1px solid ${color}25">${post.icon||'📖'} ${post.category}</div>
+    <h1 class="book-title">${post.title}</h1>
+    <div class="book-author">by ${post.author} · ${post.year||''}</div>
+    <div class="book-meta"><span>📖 ${post.readTime||'20'} min read</span><span>⭐ ${post.rating||'5'}/5</span></div>
+    ${post.oneLiner?`<div class="book-oneliner">${post.oneLiner}</div>`:''}
+    <div class="book-body">${formatContent(post.content)}</div>
+    <div class="book-actions">
+      <div class="book-action ${isLkd?'liked':''}" onclick="toggleLike('${post.id}')">${isLkd?'❤️ Liked':'🤍 Like'}</div>
+      <div class="book-action ${isSvd?'saved':''}" onclick="toggleSave('${post.id}')">${isSvd?'🔖 Saved':'📑 Save to Library'}</div>
+      <div class="book-action" onclick="shareP('${post.id}')">↗ Share</div>
     </div>
-    ${!S.swipeHintShown&&posts.length>1?`<div class="swipe-hint"><span style="font-size:12px;color:var(--text-muted);font-weight:600">← swipe → to skip · ↑ at bottom for next</span></div>`:''}`}
+  </div></div>`}
 
-window.shareP=function(id){const post=posts.find(p=>p.id===id);if(!post)return;const text=`${post.title}\n\n${(post.content||'').replace(/\*\*/g,'').replace(/`/g,'').replace(/##\s*/g,'').replace(/\[.*?\]/g,'').slice(0,400)}...`;if(navigator.share)navigator.share({title:post.title,text});else navigator.clipboard.writeText(text).then(()=>alert("Copied!"))};
+window.shareP=function(id){const post=posts.find(p=>p.id===id)||S.savedPosts.find(p=>p.id===id);if(!post)return;const text=`📖 ${post.title} by ${post.author}\n\n${post.oneLiner||''}\n\nRead the full summary on BookGram`;if(navigator.share)navigator.share({title:post.title,text});else navigator.clipboard.writeText(text).then(()=>alert("Copied!"))};
 
-// ── SWIPE ──
-let tsx=0,tsy=0,tst=0,isw=false,swipeDir=null;
-function initSwipe(){const el=document.getElementById("reelsC");if(!el)return;
-  el.addEventListener("touchstart",e=>{tsx=e.touches[0].clientX;tsy=e.touches[0].clientY;tst=Date.now();isw=true;swipeDir=null},{passive:true});
-  el.addEventListener("touchmove",e=>{if(!isw||swipeDir)return;const dx=Math.abs(e.touches[0].clientX-tsx);const dy=Math.abs(e.touches[0].clientY-tsy);if(dx>10||dy>10)swipeDir=(dx>dy)?"horizontal":"vertical"},{passive:true});
-  el.addEventListener("touchend",e=>{if(!isw)return;isw=false;const dx=tsx-e.changedTouches[0].clientX;const dy=tsy-e.changedTouches[0].clientY;const dt=Date.now()-tst;const vx=Math.abs(dx)/dt;const vy=Math.abs(dy)/dt;
-    if(swipeDir==="horizontal"){if(dx>50&&(vx>0.25||dx>120))animateAndGo("next");else if(dx<-50&&(vx>0.25||dx<-120))animateAndGo("prev")}
-    else if(swipeDir==="vertical"){const r=document.getElementById("curReel");const bot=r&&(r.scrollHeight-r.scrollTop-r.clientHeight<20);const top=r&&r.scrollTop<20;if(dy>60&&(vy>0.3||dy>150)&&bot)animateAndGo("next");else if(dy<-60&&(vy>0.3||dy<-150)&&top)animateAndGo("prev")}swipeDir=null},{passive:true});
-  document.onkeydown=e=>{if(S.view!=="feed")return;if(e.key==="ArrowRight"||e.key==="ArrowDown"||e.key==="j")animateAndGo("next");if(e.key==="ArrowLeft"||e.key==="ArrowUp"||e.key==="k")animateAndGo("prev")};
-  let wt;el.addEventListener("wheel",e=>{const r=document.getElementById("curReel");if(!r)return;const bot=r.scrollHeight-r.scrollTop-r.clientHeight<20;const top=r.scrollTop<20;if(e.deltaY>50&&bot){clearTimeout(wt);wt=setTimeout(()=>animateAndGo("next"),100)}else if(e.deltaY<-50&&top){clearTimeout(wt);wt=setTimeout(()=>animateAndGo("prev"),100)}},{passive:true})}
-
-function animateAndGo(dir){if(dir==="next"&&S.currentIndex>=posts.length-1)return;if(dir==="prev"&&S.currentIndex<=0)return;const slide=document.getElementById("curReel");if(slide){slide.classList.add(dir==="next"?"slide-out-left":"slide-out-right");setTimeout(()=>{if(dir==="next")S.currentIndex++;else S.currentIndex--;S.swipeHintShown=true;S._slideFrom=dir;render()},200)}else{if(dir==="next")S.currentIndex++;else S.currentIndex--;S.swipeHintShown=true;render()}}
-const _origRender=render;render=function(){_origRender();if(S._slideFrom&&S.view==="feed"){const slide=document.getElementById("curReel");if(slide){slide.classList.add(S._slideFrom==="next"?"slide-in-left":"slide-in-right");setTimeout(()=>slide.classList.remove("slide-in-left","slide-in-right"),400)}S._slideFrom=null}};
-
-// ── SAVED ──
-function renderSaved(){if(!S.savedPosts.length)return`<div class="page-container"><div class="empty-state"><div class="empty-state-icon">📚</div><div class="empty-state-title">No saved articles</div><div class="empty-state-desc">Tap save on any article to keep it here.</div></div></div>`;return`<div class="page-container"><div class="section-title">Saved · ${S.savedPosts.length}</div>${S.savedPosts.map(p=>{const t=TOPIC_MAP[p.topicId]||TOPICS[0];return`<div class="saved-card" onclick="openSvd('${p.id}')"><div class="saved-card-icon" style="background:${t.color}12;border:1px solid ${t.color}20">${t.icon}</div><div class="saved-card-info"><div class="saved-card-title">${p.title}</div><div class="saved-card-meta">${t.label} · ${p.difficulty||''} · ${new Date(p.savedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div></div><div class="saved-card-rm" onclick="event.stopPropagation();rmSvd('${p.id}')">✕</div></div>`}).join("")}</div>`}
-window.openSvd=function(id){let idx=posts.findIndex(p=>p.id===id);if(idx<0){const s=S.savedPosts.find(p=>p.id===id);if(s){posts.push(s);idx=posts.length-1}}if(idx>=0){S.currentIndex=idx;S.view="feed";render()}};
+function renderSaved(){
+  if(!S.savedPosts.length)return`<div class="page-container"><div class="empty-state"><div class="empty-state-icon">📚</div><div class="empty-state-title">Your library is empty</div><div class="empty-state-desc">Save book summaries to build your<br>personal knowledge library.</div></div></div>`;
+  return`<div class="page-container"><div class="section-title">Your Library · ${S.savedPosts.length} books</div>${S.savedPosts.map(p=>{
+    const color=p.color||CATEGORY_COLORS[p.category]||"#3d8b37";
+    return`<div class="saved-card" onclick="openSvd('${p.id}')"><div class="saved-card-icon" style="background:${color}10;border:1px solid ${color}20">${p.icon||'📖'}</div><div class="saved-card-info"><div class="saved-card-title">${p.title}</div><div class="saved-card-author">by ${p.author}</div><div class="saved-card-meta">${p.category} · ${new Date(p.savedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div></div><div class="saved-card-rm" onclick="event.stopPropagation();rmSvd('${p.id}')">✕</div></div>`}).join("")}</div>`}
+window.openSvd=function(id){const s=S.savedPosts.find(p=>p.id===id);if(s){posts=[s];loadedDate="saved";S.view="read";render()}};
 window.rmSvd=function(id){S.savedPosts=S.savedPosts.filter(p=>p.id!==id);saveUserData();render()};
 
-// ── EXPLORE ──
-function renderExplore(){const q=S._exQ.toLowerCase();const sub=TOPICS.filter(t=>S.topics.includes(t.id));const unsub=TOPICS.filter(t=>!S.topics.includes(t.id));const all=[...sub,...unsub].filter(t=>!q||t.label.toLowerCase().includes(q)||t.id.includes(q)||t.category.toLowerCase().includes(q));
-  let h=`<div class="page-container"><div class="explore-search"><span style="color:var(--text-muted)">🔍</span><input type="text" placeholder="Search ${TOPICS.length} topics..." value="${S._exQ}" oninput="S._exQ=this.value;render()"></div><div class="section-title">Your Topics · ${S.topics.length} active</div><div class="topic-grid">`;
-  for(const t of all.slice(0,50)){const s=S.topics.includes(t.id);const w=S.weights[t.id]||0;
-    h+=`<div class="tcard ${s?'sub':''}" onclick="togT('${t.id}')"><div class="tcard-chk">${s?'✓':''}</div><div style="font-size:24px;margin-bottom:6px">${t.icon}</div><div style="font-size:12px;font-weight:700;margin-bottom:2px;color:${s?t.color:'var(--text-dim)'}">${t.label}</div><div style="font-size:10px;color:var(--text-dim)">${s?(w>1.2?'🌟 Favorite':'Active'):'Tap to add'}</div>${s?`<div style="margin-top:6px;height:3px;border-radius:2px;background:var(--border);overflow:hidden"><div style="height:100%;width:${Math.min(w/3*100,100)}%;background:${t.color};border-radius:2px"></div></div>`:''}</div>`}
-  h+=`</div><div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:18px;margin:12px 0;box-shadow:var(--shadow)"><div style="font-size:15px;font-weight:700;font-family:'Lora',Georgia,serif;margin-bottom:8px">🌿 How Your Garden Grows</div><p style="font-size:13px;color:var(--text-dim);line-height:1.7">30 new articles bloom daily. <strong style="color:var(--text)">Your topics appear first</strong>, sorted by preference. Articles you like & save get a 🌟 boost. Everyone sees all articles — yours are just prioritized.</p></div><div style="text-align:center;margin-top:20px;color:var(--text-muted);font-size:11px">InfoGram v5 · ${TOPICS.length} Topics · ${user.username}</div></div>`;return h}
-window.togT=function(id){const i=S.topics.indexOf(id);if(i>=0){if(S.topics.length<=1)return;S.topics.splice(i,1);delete S.weights[id]}else{S.topics.push(id);S.weights[id]=1}saveUserData();sortPostsForUser();render()};
-
 // ── INIT ──
-const cur=localStorage.getItem("ig-current");
+const cur=localStorage.getItem("bg-current");
 if(cur){user={username:cur};loadUserData();loadPosts()}else render();
 </script>
 </body>
