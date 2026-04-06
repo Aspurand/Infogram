@@ -313,6 +313,19 @@ Respond with ONLY a JSON object (no markdown fences, no extra text):
 
     ai_result = json.loads(text.strip())
 
+    # Force content to be a string — AI sometimes returns nested objects
+    content = ai_result.get("content", "")
+    if not isinstance(content, str):
+        content = json.dumps(content) if content else ""
+
+    oneLiner = ai_result.get("oneLiner", f"A must-read book on {book['category'].lower()}.")
+    if not isinstance(oneLiner, str):
+        oneLiner = str(oneLiner)
+
+    rating = ai_result.get("rating", "4.5")
+    if not isinstance(rating, str):
+        rating = str(rating)
+
     # HARDCODE book metadata — never trust the AI for these
     result = {
         "id": hashlib.md5(f"{date.today()}-{book['title']}".encode()).hexdigest()[:12],
@@ -322,10 +335,10 @@ Respond with ONLY a JSON object (no markdown fences, no extra text):
         "category": book["category"],
         "icon": book["icon"],
         "color": CATEGORY_COLORS.get(book["category"], "#3d8b37"),
-        "content": ai_result.get("content", ""),
-        "oneLiner": ai_result.get("oneLiner", f"A must-read book on {book['category'].lower()}."),
+        "content": content,
+        "oneLiner": oneLiner,
         "readTime": "20",
-        "rating": ai_result.get("rating", "4.5"),
+        "rating": rating,
         "imageUrl": make_image_url(book["category"], book["title"]),
         "imageQuery": IMG_QUERIES.get(book["category"], "books+reading"),
         "generatedAt": datetime.utcnow().isoformat() + "Z",
@@ -394,7 +407,8 @@ def main():
     log(f"✅ Summary ready!")
     log(f"📖 \"{result['title']}\" by {result['author']}")
     log(f"📁 {output_path}")
-    log(f"📝 {len(result.get('content','').split())} words")
+    wc = len(str(result.get('content','')).split())
+    log(f"📝 {wc} words")
     log(f"💰 Cost: $0.00")
     log("")
     log(f"📚 Library: {len(BOOKS)} books")
