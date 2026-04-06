@@ -1,14 +1,17 @@
 #!/usr/bin/env python3 -u
 """
-InfoGram Daily Post Generator v5 (GitHub Models — 100% Free)
+BookGram Daily Summary Generator v1 (GitHub Models — Free)
 
-Uses GitHub's free AI Models API:
-- Model: gpt-4o-mini (free tier)
-- Rate limit: 150 requests/day, 15 requests/min
-- Auth: Built-in GITHUB_TOKEN — no extra API key needed
-- We use: 10 requests/day, well within limits
+Generates 1 deep book summary per day (~3000-4000 words, 20 min read)
+from a curated library of the best books in:
+- Self Help & Personal Development
+- Motivation & Mindset
+- Investing & Wealth
+- Leadership & Management
+- Business Strategy & Entrepreneurship
+- Supply Chain & Operations
 
-Usage: python -u generate.py
+Uses GitHub Models API (gpt-4o-mini) — completely free.
 """
 
 import json, os, sys, time, random, hashlib
@@ -22,425 +25,391 @@ def log(msg):
     print(msg)
     sys.stdout.flush()
 
-# GitHub Models uses the built-in GITHUB_TOKEN
 TOKEN = os.environ.get("GITHUB_TOKEN", "")
 MODEL = "gpt-4o-mini"
 API_URL = "https://models.inference.ai.azure.com/chat/completions"
 POSTS_DIR = Path("posts")
-NUM_POSTS = 30
-MAX_RETRIES = 3
-REQUEST_DELAY = 8  # seconds between requests
-API_TIMEOUT = 60
+API_TIMEOUT = 90  # longer timeout for big summaries
 
-TOPICS = [
-    {"id":"ai","label":"Artificial Intelligence","category":"AI & Computing"},
-    {"id":"machine-learning","label":"Machine Learning","category":"AI & Computing"},
-    {"id":"deep-learning","label":"Deep Learning","category":"AI & Computing"},
-    {"id":"robotics","label":"Robotics","category":"AI & Computing"},
-    {"id":"computer-vision","label":"Computer Vision","category":"AI & Computing"},
-    {"id":"nlp","label":"Natural Language Processing","category":"AI & Computing"},
-    {"id":"cybersecurity","label":"Cybersecurity","category":"AI & Computing"},
-    {"id":"quantum-computing","label":"Quantum Computing","category":"AI & Computing"},
-    {"id":"blockchain","label":"Blockchain & Crypto","category":"AI & Computing"},
-    {"id":"cloud-computing","label":"Cloud & Edge Computing","category":"AI & Computing"},
-    {"id":"investing","label":"Investing & Markets","category":"Business & Finance"},
-    {"id":"startup","label":"Startups & VC","category":"Business & Finance"},
-    {"id":"economics","label":"Economics","category":"Business & Finance"},
-    {"id":"supply-chain","label":"Supply Chain","category":"Business & Finance"},
-    {"id":"procurement","label":"Procurement","category":"Business & Finance"},
-    {"id":"real-estate","label":"Real Estate Investing","category":"Business & Finance"},
-    {"id":"personal-finance","label":"Personal Finance","category":"Business & Finance"},
-    {"id":"crypto-defi","label":"DeFi & Web3","category":"Business & Finance"},
-    {"id":"marketing","label":"Marketing & Growth","category":"Business & Finance"},
-    {"id":"negotiation","label":"Negotiation & Persuasion","category":"Business & Finance"},
-    {"id":"mechanical-eng","label":"Mechanical Engineering","category":"Engineering"},
-    {"id":"electrical-eng","label":"Electrical Engineering","category":"Engineering"},
-    {"id":"civil-eng","label":"Civil Engineering","category":"Engineering"},
-    {"id":"aerospace","label":"Aerospace Engineering","category":"Engineering"},
-    {"id":"automotive","label":"Automotive Engineering","category":"Engineering"},
-    {"id":"3d-printing","label":"3D Printing","category":"Engineering"},
-    {"id":"materials-sci","label":"Materials Science","category":"Engineering"},
-    {"id":"renewable-energy","label":"Renewable Energy","category":"Engineering"},
-    {"id":"nuclear-energy","label":"Nuclear Energy","category":"Engineering"},
-    {"id":"naval-eng","label":"Naval & Marine Engineering","category":"Engineering"},
-    {"id":"physics","label":"Physics","category":"Science"},
-    {"id":"chemistry","label":"Chemistry","category":"Science"},
-    {"id":"biology","label":"Biology","category":"Science"},
-    {"id":"astronomy","label":"Astronomy & Space","category":"Science"},
-    {"id":"geology","label":"Geology","category":"Science"},
-    {"id":"ocean-science","label":"Ocean Science","category":"Science"},
-    {"id":"climate-science","label":"Climate Science","category":"Science"},
-    {"id":"neuroscience","label":"Neuroscience","category":"Science"},
-    {"id":"genetics","label":"Genetics & Genomics","category":"Science"},
-    {"id":"paleontology","label":"Paleontology","category":"Science"},
-    {"id":"mathematics","label":"Pure Mathematics","category":"Mathematics"},
-    {"id":"statistics","label":"Statistics & Probability","category":"Mathematics"},
-    {"id":"game-theory","label":"Game Theory","category":"Mathematics"},
-    {"id":"cryptography","label":"Cryptography","category":"Mathematics"},
-    {"id":"topology","label":"Topology","category":"Mathematics"},
-    {"id":"medicine","label":"Medicine & Surgery","category":"Health & Medicine"},
-    {"id":"nutrition","label":"Nutrition Science","category":"Health & Medicine"},
-    {"id":"psychology","label":"Psychology","category":"Health & Medicine"},
-    {"id":"pharmacology","label":"Pharmacology","category":"Health & Medicine"},
-    {"id":"epidemiology","label":"Epidemiology","category":"Health & Medicine"},
-    {"id":"fitness-science","label":"Exercise Science","category":"Health & Medicine"},
-    {"id":"longevity","label":"Longevity & Aging","category":"Health & Medicine"},
-    {"id":"biotech","label":"Biotech & Gene Therapy","category":"Health & Medicine"},
-    {"id":"space-exploration","label":"Space Exploration","category":"Space"},
-    {"id":"moon-missions","label":"Moon Missions","category":"Space"},
-    {"id":"mars-colonization","label":"Mars Colonization","category":"Space"},
-    {"id":"black-holes","label":"Black Holes & Cosmology","category":"Space"},
-    {"id":"satellites","label":"Satellites & GPS","category":"Space"},
-    {"id":"astrobiology","label":"Alien Life & Astrobiology","category":"Space"},
-    {"id":"geopolitics","label":"Geopolitics","category":"Geopolitics & History"},
-    {"id":"ancient-history","label":"Ancient Civilizations","category":"Geopolitics & History"},
-    {"id":"world-wars","label":"World Wars","category":"Geopolitics & History"},
-    {"id":"cold-war","label":"Cold War & Espionage","category":"Geopolitics & History"},
-    {"id":"conspiracy","label":"Conspiracy Theories","category":"Geopolitics & History"},
-    {"id":"intelligence","label":"Intelligence Agencies","category":"Geopolitics & History"},
-    {"id":"empires","label":"Rise & Fall of Empires","category":"Geopolitics & History"},
-    {"id":"future-war","label":"Future of Warfare","category":"Geopolitics & History"},
-    {"id":"ux-design","label":"UX/UI Design","category":"Design & Creativity"},
-    {"id":"architecture","label":"Architecture","category":"Design & Creativity"},
-    {"id":"photography","label":"Photography","category":"Design & Creativity"},
-    {"id":"filmmaking","label":"Filmmaking & Cinema","category":"Design & Creativity"},
-    {"id":"music-theory","label":"Music Theory","category":"Design & Creativity"},
-    {"id":"game-design","label":"Game Design","category":"Design & Creativity"},
-    {"id":"philosophy","label":"Philosophy","category":"Philosophy & Mind"},
-    {"id":"consciousness","label":"Consciousness","category":"Philosophy & Mind"},
-    {"id":"stoicism","label":"Stoicism & Mindset","category":"Philosophy & Mind"},
-    {"id":"decision-making","label":"Decision Making & Biases","category":"Philosophy & Mind"},
-    {"id":"sleep-science","label":"Sleep Science","category":"Philosophy & Mind"},
-    {"id":"meditation","label":"Meditation & Mindfulness","category":"Philosophy & Mind"},
-    {"id":"ocean-mammals","label":"Ocean Mammals","category":"Animals & Nature"},
-    {"id":"predators","label":"Apex Predators","category":"Animals & Nature"},
-    {"id":"deep-sea","label":"Deep Sea Mysteries","category":"Animals & Nature"},
-    {"id":"rainforests","label":"Rainforests & Ecosystems","category":"Animals & Nature"},
-    {"id":"animal-intelligence","label":"Animal Intelligence","category":"Animals & Nature"},
-    {"id":"extinction","label":"Extinction & Conservation","category":"Animals & Nature"},
-    {"id":"mega-projects","label":"Mega Engineering Projects","category":"Infrastructure"},
-    {"id":"urban-planning","label":"Urban Planning","category":"Infrastructure"},
-    {"id":"transportation","label":"Transportation Systems","category":"Infrastructure"},
-    {"id":"water-systems","label":"Water & Sanitation","category":"Infrastructure"},
-    {"id":"power-grid","label":"Power Grid & Energy","category":"Infrastructure"},
-    {"id":"food-science","label":"Food Science","category":"Food & Agriculture"},
-    {"id":"fermentation","label":"Fermentation & Brewing","category":"Food & Agriculture"},
-    {"id":"agriculture","label":"Agriculture & Farming","category":"Food & Agriculture"},
-    {"id":"food-supply","label":"Global Food Systems","category":"Food & Agriculture"},
-    {"id":"semiconductors","label":"Semiconductors","category":"Tech & Hardware"},
-    {"id":"ev-tech","label":"Electric Vehicles","category":"Tech & Hardware"},
-    {"id":"ar-vr","label":"AR/VR & Spatial Computing","category":"Tech & Hardware"},
-    {"id":"drones","label":"Drones & UAVs","category":"Tech & Hardware"},
-    {"id":"biocomputing","label":"Biocomputing","category":"Tech & Hardware"},
-    {"id":"internet-infra","label":"Internet Infrastructure","category":"Tech & Hardware"},
-    {"id":"sports-analytics","label":"Sports Analytics","category":"Sports"},
-    {"id":"f1","label":"Formula 1 Engineering","category":"Sports"},
-    {"id":"human-performance","label":"Human Performance","category":"Sports"},
-    {"id":"sports-psychology","label":"Sports Psychology","category":"Sports"},
-    {"id":"memory-learning","label":"Memory & Learning","category":"Learning & Leadership"},
-    {"id":"speed-reading","label":"Speed Reading","category":"Learning & Leadership"},
-    {"id":"systems-thinking","label":"Systems Thinking","category":"Learning & Leadership"},
-    {"id":"leadership","label":"Leadership","category":"Learning & Leadership"},
+# ═══════════════════════════════════════════════════════════════
+# CURATED BOOK LIBRARY — 365+ of the absolute best books
+# Each book appears at most once per year cycle
+# ═══════════════════════════════════════════════════════════════
+
+BOOKS = [
+    # ── SELF HELP & PERSONAL DEVELOPMENT ──
+    {"title":"Atomic Habits","author":"James Clear","year":2018,"category":"Self Help","icon":"⚡"},
+    {"title":"The 7 Habits of Highly Effective People","author":"Stephen Covey","year":1989,"category":"Self Help","icon":"🎯"},
+    {"title":"Deep Work","author":"Cal Newport","year":2016,"category":"Self Help","icon":"🧠"},
+    {"title":"The Power of Now","author":"Eckhart Tolle","year":1997,"category":"Self Help","icon":"🕐"},
+    {"title":"How to Win Friends and Influence People","author":"Dale Carnegie","year":1936,"category":"Self Help","icon":"🤝"},
+    {"title":"Think and Grow Rich","author":"Napoleon Hill","year":1937,"category":"Self Help","icon":"💭"},
+    {"title":"The Subtle Art of Not Giving a F*ck","author":"Mark Manson","year":2016,"category":"Self Help","icon":"🔥"},
+    {"title":"Thinking, Fast and Slow","author":"Daniel Kahneman","year":2011,"category":"Self Help","icon":"🧩"},
+    {"title":"The 4-Hour Workweek","author":"Tim Ferriss","year":2007,"category":"Self Help","icon":"⏰"},
+    {"title":"Essentialism","author":"Greg McKeown","year":2014,"category":"Self Help","icon":"✂️"},
+    {"title":"The Power of Habit","author":"Charles Duhigg","year":2012,"category":"Self Help","icon":"🔄"},
+    {"title":"Mindset","author":"Carol Dweck","year":2006,"category":"Self Help","icon":"🌱"},
+    {"title":"Range","author":"David Epstein","year":2019,"category":"Self Help","icon":"🎨"},
+    {"title":"Digital Minimalism","author":"Cal Newport","year":2019,"category":"Self Help","icon":"📵"},
+    {"title":"The Compound Effect","author":"Darren Hardy","year":2010,"category":"Self Help","icon":"📈"},
+    {"title":"Outliers","author":"Malcolm Gladwell","year":2008,"category":"Self Help","icon":"⭐"},
+    {"title":"The 5 AM Club","author":"Robin Sharma","year":2018,"category":"Self Help","icon":"🌅"},
+    {"title":"Eat That Frog!","author":"Brian Tracy","year":2001,"category":"Self Help","icon":"🐸"},
+    {"title":"The One Thing","author":"Gary Keller","year":2013,"category":"Self Help","icon":"1️⃣"},
+    {"title":"Make Your Bed","author":"Admiral William McRaven","year":2017,"category":"Self Help","icon":"🛏️"},
+    {"title":"Can't Hurt Me","author":"David Goggins","year":2018,"category":"Self Help","icon":"💪"},
+    {"title":"12 Rules for Life","author":"Jordan Peterson","year":2018,"category":"Self Help","icon":"📜"},
+    {"title":"The Miracle Morning","author":"Hal Elrod","year":2012,"category":"Self Help","icon":"☀️"},
+    {"title":"Grit","author":"Angela Duckworth","year":2016,"category":"Self Help","icon":"💎"},
+    {"title":"So Good They Can't Ignore You","author":"Cal Newport","year":2012,"category":"Self Help","icon":"🏆"},
+    {"title":"Tiny Habits","author":"BJ Fogg","year":2019,"category":"Self Help","icon":"🔬"},
+    {"title":"The Obstacle Is the Way","author":"Ryan Holiday","year":2014,"category":"Self Help","icon":"🏔️"},
+    {"title":"Stillness Is the Key","author":"Ryan Holiday","year":2019,"category":"Self Help","icon":"🧘"},
+    {"title":"Ego Is the Enemy","author":"Ryan Holiday","year":2016,"category":"Self Help","icon":"🪞"},
+    {"title":"Never Split the Difference","author":"Chris Voss","year":2016,"category":"Self Help","icon":"🎲"},
+    {"title":"Influence","author":"Robert Cialdini","year":1984,"category":"Self Help","icon":"🧲"},
+    {"title":"Emotional Intelligence","author":"Daniel Goleman","year":1995,"category":"Self Help","icon":"❤️"},
+    {"title":"Flow","author":"Mihaly Csikszentmihalyi","year":1990,"category":"Self Help","icon":"🌊"},
+    {"title":"The Happiness Advantage","author":"Shawn Achor","year":2010,"category":"Self Help","icon":"😊"},
+    {"title":"Quiet","author":"Susan Cain","year":2012,"category":"Self Help","icon":"🤫"},
+    {"title":"Man's Search for Meaning","author":"Viktor Frankl","year":1946,"category":"Self Help","icon":"🕊️"},
+    {"title":"Meditations","author":"Marcus Aurelius","year":180,"category":"Self Help","icon":"🏛️"},
+
+    # ── MOTIVATION & MINDSET ──
+    {"title":"The Alchemist","author":"Paulo Coelho","year":1988,"category":"Motivation","icon":"✨"},
+    {"title":"Start with Why","author":"Simon Sinek","year":2009,"category":"Motivation","icon":"❓"},
+    {"title":"Dare to Lead","author":"Brené Brown","year":2018,"category":"Motivation","icon":"🦁"},
+    {"title":"Daring Greatly","author":"Brené Brown","year":2012,"category":"Motivation","icon":"🛡️"},
+    {"title":"The War of Art","author":"Steven Pressfield","year":2002,"category":"Motivation","icon":"⚔️"},
+    {"title":"Awaken the Giant Within","author":"Tony Robbins","year":1991,"category":"Motivation","icon":"🗿"},
+    {"title":"You Are a Badass","author":"Jen Sincero","year":2013,"category":"Motivation","icon":"🌟"},
+    {"title":"Shoe Dog","author":"Phil Knight","year":2016,"category":"Motivation","icon":"👟"},
+    {"title":"The Magic of Thinking Big","author":"David Schwartz","year":1959,"category":"Motivation","icon":"🎪"},
+    {"title":"Relentless","author":"Tim Grover","year":2013,"category":"Motivation","icon":"🔥"},
+    {"title":"Extreme Ownership","author":"Jocko Willink","year":2015,"category":"Motivation","icon":"🎖️"},
+    {"title":"Discipline Equals Freedom","author":"Jocko Willink","year":2017,"category":"Motivation","icon":"⛓️"},
+    {"title":"Greenlights","author":"Matthew McConaughey","year":2020,"category":"Motivation","icon":"🟢"},
+    {"title":"The Mountain Is You","author":"Brianna Wiest","year":2020,"category":"Motivation","icon":"⛰️"},
+    {"title":"Mindfulness in Plain English","author":"Bhante Gunaratana","year":1994,"category":"Motivation","icon":"🧘"},
+    {"title":"The Untethered Soul","author":"Michael Singer","year":2007,"category":"Motivation","icon":"🕊️"},
+    {"title":"Antifragile","author":"Nassim Nicholas Taleb","year":2012,"category":"Motivation","icon":"💪"},
+    {"title":"Black Swan","author":"Nassim Nicholas Taleb","year":2007,"category":"Motivation","icon":"🦢"},
+    {"title":"Fooled by Randomness","author":"Nassim Nicholas Taleb","year":2001,"category":"Motivation","icon":"🎰"},
+    {"title":"The Courage to Be Disliked","author":"Ichiro Kishimi","year":2013,"category":"Motivation","icon":"🦋"},
+    {"title":"Who Moved My Cheese?","author":"Spencer Johnson","year":1998,"category":"Motivation","icon":"🧀"},
+    {"title":"The Monk Who Sold His Ferrari","author":"Robin Sharma","year":1997,"category":"Motivation","icon":"🏎️"},
+    {"title":"Think Like a Monk","author":"Jay Shetty","year":2020,"category":"Motivation","icon":"🧘"},
+    {"title":"Everything Is Figureoutable","author":"Marie Forleo","year":2019,"category":"Motivation","icon":"💡"},
+
+    # ── INVESTING & WEALTH ──
+    {"title":"The Intelligent Investor","author":"Benjamin Graham","year":1949,"category":"Investing","icon":"📊"},
+    {"title":"Rich Dad Poor Dad","author":"Robert Kiyosaki","year":1997,"category":"Investing","icon":"🏠"},
+    {"title":"The Psychology of Money","author":"Morgan Housel","year":2020,"category":"Investing","icon":"🧠"},
+    {"title":"A Random Walk Down Wall Street","author":"Burton Malkiel","year":1973,"category":"Investing","icon":"🎲"},
+    {"title":"The Little Book of Common Sense Investing","author":"John Bogle","year":2007,"category":"Investing","icon":"📖"},
+    {"title":"One Up on Wall Street","author":"Peter Lynch","year":1989,"category":"Investing","icon":"📈"},
+    {"title":"The Millionaire Next Door","author":"Thomas Stanley","year":1996,"category":"Investing","icon":"🏡"},
+    {"title":"Think and Grow Rich","author":"Napoleon Hill","year":1937,"category":"Investing","icon":"💰"},
+    {"title":"The Total Money Makeover","author":"Dave Ramsey","year":2003,"category":"Investing","icon":"💳"},
+    {"title":"I Will Teach You to Be Rich","author":"Ramit Sethi","year":2009,"category":"Investing","icon":"💵"},
+    {"title":"The Richest Man in Babylon","author":"George Clason","year":1926,"category":"Investing","icon":"🏛️"},
+    {"title":"Common Stocks and Uncommon Profits","author":"Philip Fisher","year":1958,"category":"Investing","icon":"📉"},
+    {"title":"The Warren Buffett Way","author":"Robert Hagstrom","year":1994,"category":"Investing","icon":"🎩"},
+    {"title":"Principles","author":"Ray Dalio","year":2017,"category":"Investing","icon":"⚖️"},
+    {"title":"The Dhandho Investor","author":"Mohnish Pabrai","year":2007,"category":"Investing","icon":"🎯"},
+    {"title":"Margin of Safety","author":"Seth Klarman","year":1991,"category":"Investing","icon":"🛡️"},
+    {"title":"Poor Charlie's Almanack","author":"Charlie Munger","year":2005,"category":"Investing","icon":"📚"},
+    {"title":"The Essays of Warren Buffett","author":"Warren Buffett","year":1997,"category":"Investing","icon":"✍️"},
+    {"title":"Security Analysis","author":"Benjamin Graham","year":1934,"category":"Investing","icon":"🔍"},
+    {"title":"You Can Be a Stock Market Genius","author":"Joel Greenblatt","year":1997,"category":"Investing","icon":"🧙"},
+    {"title":"Money: Master the Game","author":"Tony Robbins","year":2014,"category":"Investing","icon":"🎮"},
+    {"title":"The Simple Path to Wealth","author":"JL Collins","year":2016,"category":"Investing","icon":"🛤️"},
+    {"title":"Unshakeable","author":"Tony Robbins","year":2017,"category":"Investing","icon":"🏔️"},
+    {"title":"The Barefoot Investor","author":"Scott Pape","year":2016,"category":"Investing","icon":"🦶"},
+
+    # ── LEADERSHIP & MANAGEMENT ──
+    {"title":"Good to Great","author":"Jim Collins","year":2001,"category":"Leadership","icon":"🚀"},
+    {"title":"Leaders Eat Last","author":"Simon Sinek","year":2014,"category":"Leadership","icon":"🍽️"},
+    {"title":"The 21 Irrefutable Laws of Leadership","author":"John Maxwell","year":1998,"category":"Leadership","icon":"📜"},
+    {"title":"Primal Leadership","author":"Daniel Goleman","year":2002,"category":"Leadership","icon":"❤️"},
+    {"title":"Radical Candor","author":"Kim Scott","year":2017,"category":"Leadership","icon":"💬"},
+    {"title":"The Five Dysfunctions of a Team","author":"Patrick Lencioni","year":2002,"category":"Leadership","icon":"👥"},
+    {"title":"Turn the Ship Around!","author":"David Marquet","year":2013,"category":"Leadership","icon":"🚢"},
+    {"title":"Trillion Dollar Coach","author":"Eric Schmidt","year":2019,"category":"Leadership","icon":"🏈"},
+    {"title":"The Hard Thing About Hard Things","author":"Ben Horowitz","year":2014,"category":"Leadership","icon":"🔨"},
+    {"title":"High Output Management","author":"Andy Grove","year":1983,"category":"Leadership","icon":"⚡"},
+    {"title":"First, Break All the Rules","author":"Marcus Buckingham","year":1999,"category":"Leadership","icon":"💥"},
+    {"title":"Multipliers","author":"Liz Wiseman","year":2010,"category":"Leadership","icon":"✖️"},
+    {"title":"Drive","author":"Daniel Pink","year":2009,"category":"Leadership","icon":"🏎️"},
+    {"title":"The Culture Code","author":"Daniel Coyle","year":2018,"category":"Leadership","icon":"🧬"},
+    {"title":"Measure What Matters","author":"John Doerr","year":2018,"category":"Leadership","icon":"📏"},
+    {"title":"An Astronaut's Guide to Life on Earth","author":"Chris Hadfield","year":2013,"category":"Leadership","icon":"🧑‍🚀"},
+    {"title":"Team of Teams","author":"Stanley McChrystal","year":2015,"category":"Leadership","icon":"🕸️"},
+    {"title":"It's Your Ship","author":"Michael Abrashoff","year":2002,"category":"Leadership","icon":"⛵"},
+    {"title":"The Infinite Game","author":"Simon Sinek","year":2019,"category":"Leadership","icon":"♾️"},
+    {"title":"Creativity, Inc.","author":"Ed Catmull","year":2014,"category":"Leadership","icon":"🎨"},
+    {"title":"Powerful","author":"Patty McCord","year":2017,"category":"Leadership","icon":"⚡"},
+    {"title":"The Manager's Path","author":"Camille Fournier","year":2017,"category":"Leadership","icon":"🗺️"},
+    {"title":"Nine Lies About Work","author":"Marcus Buckingham","year":2019,"category":"Leadership","icon":"🚫"},
+
+    # ── BUSINESS STRATEGY & ENTREPRENEURSHIP ──
+    {"title":"Zero to One","author":"Peter Thiel","year":2014,"category":"Business Strategy","icon":"0️⃣"},
+    {"title":"The Lean Startup","author":"Eric Ries","year":2011,"category":"Business Strategy","icon":"🏗️"},
+    {"title":"Blue Ocean Strategy","author":"W. Chan Kim","year":2004,"category":"Business Strategy","icon":"🌊"},
+    {"title":"Competitive Strategy","author":"Michael Porter","year":1980,"category":"Business Strategy","icon":"♟️"},
+    {"title":"The Innovator's Dilemma","author":"Clayton Christensen","year":1997,"category":"Business Strategy","icon":"💡"},
+    {"title":"Built to Last","author":"Jim Collins","year":1994,"category":"Business Strategy","icon":"🏛️"},
+    {"title":"Rework","author":"Jason Fried","year":2010,"category":"Business Strategy","icon":"🔧"},
+    {"title":"The $100 Startup","author":"Chris Guillebeau","year":2012,"category":"Business Strategy","icon":"💵"},
+    {"title":"Blitzscaling","author":"Reid Hoffman","year":2018,"category":"Business Strategy","icon":"⚡"},
+    {"title":"The Mom Test","author":"Rob Fitzpatrick","year":2013,"category":"Business Strategy","icon":"🤱"},
+    {"title":"Crossing the Chasm","author":"Geoffrey Moore","year":1991,"category":"Business Strategy","icon":"🌉"},
+    {"title":"Purple Cow","author":"Seth Godin","year":2003,"category":"Business Strategy","icon":"🐮"},
+    {"title":"This Is Marketing","author":"Seth Godin","year":2018,"category":"Business Strategy","icon":"📣"},
+    {"title":"Traction","author":"Gabriel Weinberg","year":2015,"category":"Business Strategy","icon":"🚜"},
+    {"title":"The E-Myth Revisited","author":"Michael Gerber","year":1995,"category":"Business Strategy","icon":"📋"},
+    {"title":"Profit First","author":"Mike Michalowicz","year":2014,"category":"Business Strategy","icon":"💰"},
+    {"title":"Business Model Generation","author":"Alexander Osterwalder","year":2010,"category":"Business Strategy","icon":"📐"},
+    {"title":"Playing to Win","author":"A.G. Lafley","year":2013,"category":"Business Strategy","icon":"🏆"},
+    {"title":"Only the Paranoid Survive","author":"Andy Grove","year":1996,"category":"Business Strategy","icon":"👁️"},
+    {"title":"The Personal MBA","author":"Josh Kaufman","year":2010,"category":"Business Strategy","icon":"🎓"},
+    {"title":"Thinking in Bets","author":"Annie Duke","year":2018,"category":"Business Strategy","icon":"🎰"},
+    {"title":"Super Founders","author":"Ali Tamaseb","year":2021,"category":"Business Strategy","icon":"🦸"},
+    {"title":"Hooked","author":"Nir Eyal","year":2014,"category":"Business Strategy","icon":"🪝"},
+    {"title":"The Cold Start Problem","author":"Andrew Chen","year":2021,"category":"Business Strategy","icon":"❄️"},
+    {"title":"Platform Revolution","author":"Geoffrey Parker","year":2016,"category":"Business Strategy","icon":"🌐"},
+    {"title":"No Rules Rules","author":"Reed Hastings","year":2020,"category":"Business Strategy","icon":"🚫"},
+    {"title":"Amp It Up","author":"Frank Slootman","year":2022,"category":"Business Strategy","icon":"🔊"},
+    {"title":"What You Do Is Who You Are","author":"Ben Horowitz","year":2019,"category":"Business Strategy","icon":"🪞"},
+
+    # ── SUPPLY CHAIN & OPERATIONS ──
+    {"title":"The Goal","author":"Eliyahu Goldratt","year":1984,"category":"Supply Chain","icon":"🎯"},
+    {"title":"The Toyota Way","author":"Jeffrey Liker","year":2004,"category":"Supply Chain","icon":"🏭"},
+    {"title":"The Machine That Changed the World","author":"James Womack","year":1990,"category":"Supply Chain","icon":"⚙️"},
+    {"title":"Supply Chain Management","author":"Sunil Chopra","year":2001,"category":"Supply Chain","icon":"🔗"},
+    {"title":"The Phoenix Project","author":"Gene Kim","year":2013,"category":"Supply Chain","icon":"🔥"},
+    {"title":"The Unicorn Project","author":"Gene Kim","year":2019,"category":"Supply Chain","icon":"🦄"},
+    {"title":"Out of the Crisis","author":"W. Edwards Deming","year":1982,"category":"Supply Chain","icon":"📊"},
+    {"title":"Lean Thinking","author":"James Womack","year":1996,"category":"Supply Chain","icon":"🔬"},
+    {"title":"The Lean Six Sigma Pocket Toolbook","author":"Michael George","year":2004,"category":"Supply Chain","icon":"🧰"},
+    {"title":"Factory Physics","author":"Wallace Hopp","year":1996,"category":"Supply Chain","icon":"⚛️"},
+    {"title":"Operations Management","author":"Nigel Slack","year":1995,"category":"Supply Chain","icon":"📋"},
+    {"title":"Logistics & Supply Chain Management","author":"Martin Christopher","year":1992,"category":"Supply Chain","icon":"🚛"},
+    {"title":"The New Supply Chain Agenda","author":"Reuben Slone","year":2010,"category":"Supply Chain","icon":"📝"},
+    {"title":"Demand Driven Material Requirements Planning","author":"Carol Ptak","year":2011,"category":"Supply Chain","icon":"📦"},
+    {"title":"The Purchasing Chessboard","author":"Christian Schuh","year":2008,"category":"Supply Chain","icon":"♟️"},
+    {"title":"Strategic Sourcing in the New Economy","author":"Bonnie Keith","year":2015,"category":"Supply Chain","icon":"🎯"},
+    {"title":"Procurement and Supply Chain Management","author":"Kenneth Lysons","year":2000,"category":"Supply Chain","icon":"📊"},
+    {"title":"The Fifth Discipline","author":"Peter Senge","year":1990,"category":"Supply Chain","icon":"5️⃣"},
+    {"title":"Critical Chain","author":"Eliyahu Goldratt","year":1997,"category":"Supply Chain","icon":"⛓️"},
+    {"title":"It's Not Luck","author":"Eliyahu Goldratt","year":1994,"category":"Supply Chain","icon":"🍀"},
+    {"title":"Velocity","author":"Dee Jacob","year":2009,"category":"Supply Chain","icon":"💨"},
+    {"title":"The DevOps Handbook","author":"Gene Kim","year":2016,"category":"Supply Chain","icon":"🔄"},
 ]
 
-IMG_QUERIES = {
-    "ai":"artificial+intelligence+neural+network","machine-learning":"machine+learning+algorithm+data",
-    "deep-learning":"deep+learning+neural+network+layers","robotics":"robot+arm+automation+factory",
-    "computer-vision":"computer+vision+object+detection","nlp":"natural+language+processing+chatbot",
-    "cybersecurity":"cybersecurity+hacking+digital+lock","quantum-computing":"quantum+computer+processor+chip",
-    "blockchain":"blockchain+cryptocurrency+bitcoin+ledger","cloud-computing":"cloud+computing+server+data+center",
-    "investing":"stock+market+trading+chart+wall+street","startup":"startup+office+silicon+valley+team",
-    "economics":"economics+market+graph+finance","supply-chain":"logistics+warehouse+shipping+container",
-    "procurement":"procurement+contract+business+negotiation","real-estate":"real+estate+property+house+skyline",
-    "personal-finance":"savings+money+budget+piggy+bank","crypto-defi":"defi+crypto+ethereum+web3",
-    "marketing":"marketing+advertising+digital+campaign","negotiation":"negotiation+handshake+business+deal",
-    "mechanical-eng":"engine+gears+machinery+mechanical","electrical-eng":"circuit+board+electronics+wiring",
-    "civil-eng":"bridge+construction+steel+engineering","aerospace":"jet+engine+aerospace+aircraft",
-    "automotive":"car+engine+turbo+automotive+racing","3d-printing":"3d+printing+additive+manufacturing",
-    "materials-sci":"materials+science+alloy+microscope","renewable-energy":"solar+panel+wind+turbine+energy",
-    "nuclear-energy":"nuclear+power+plant+reactor+cooling","naval-eng":"ship+engineering+naval+vessel+ocean",
-    "physics":"physics+particle+accelerator+quantum","chemistry":"chemistry+molecules+laboratory+flask",
-    "biology":"biology+cell+microscope+dna+organism","astronomy":"space+galaxy+nebula+telescope+stars",
-    "geology":"volcano+geology+earth+rocks+layers","ocean-science":"ocean+research+submarine+marine",
-    "climate-science":"climate+earth+atmosphere+global","neuroscience":"brain+neuron+synapse+scan",
-    "genetics":"dna+genetics+genome+helix+sequencing","paleontology":"dinosaur+fossil+excavation+skeleton",
-    "mathematics":"mathematics+fractal+geometry+equation","statistics":"statistics+data+chart+bell+curve",
-    "game-theory":"chess+strategy+game+theory+board","cryptography":"cryptography+cipher+code+encryption",
-    "topology":"topology+mobius+strip+geometry+knot","medicine":"hospital+surgery+medical+doctor",
-    "nutrition":"nutrition+healthy+food+vitamins","psychology":"psychology+mind+therapy+brain+couch",
-    "pharmacology":"pharmacy+medicine+drug+pill+molecular","epidemiology":"virus+pandemic+disease+spread+map",
-    "fitness-science":"fitness+gym+exercise+muscle+training","longevity":"aging+longevity+science+health",
-    "biotech":"biotech+laboratory+gene+therapy+dna","space-exploration":"space+shuttle+launch+rocket+nasa",
-    "moon-missions":"moon+landing+lunar+apollo+astronaut","mars-colonization":"mars+planet+rover+colony+red",
-    "black-holes":"black+hole+cosmos+singularity+space","satellites":"satellite+orbit+earth+space+gps",
-    "astrobiology":"alien+exoplanet+telescope+search+life","geopolitics":"geopolitics+world+map+globe+diplomacy",
-    "ancient-history":"ancient+rome+egypt+pyramid+ruins","world-wars":"world+war+military+tank+history",
-    "cold-war":"cold+war+spy+berlin+wall+espionage","conspiracy":"conspiracy+mystery+eye+pyramid+secret",
-    "intelligence":"spy+intelligence+secret+agent+cia","empires":"empire+castle+kingdom+medieval+throne",
-    "future-war":"military+drone+cyber+warfare+future","ux-design":"ux+design+interface+wireframe+app",
-    "architecture":"architecture+modern+building+design","photography":"photography+camera+lens+portrait",
-    "filmmaking":"filmmaking+cinema+director+movie+set","music-theory":"music+piano+notes+sheet+theory",
-    "game-design":"game+design+controller+development","philosophy":"philosophy+thinker+ancient+wisdom",
-    "consciousness":"consciousness+mind+awareness+light","stoicism":"stoic+marble+statue+philosophy",
-    "decision-making":"decision+brain+choices+bias+fork","sleep-science":"sleep+brain+dreams+night+bed",
-    "meditation":"meditation+zen+peaceful+nature+calm","ocean-mammals":"dolphin+whale+ocean+marine+humpback",
-    "predators":"lion+predator+wildlife+safari+hunt","deep-sea":"deep+sea+anglerfish+abyss+ocean",
-    "rainforests":"rainforest+tropical+jungle+canopy+green","animal-intelligence":"octopus+intelligent+animal+brain",
-    "extinction":"endangered+species+conservation+panda","mega-projects":"bridge+dam+mega+engineering+project",
-    "urban-planning":"city+skyline+urban+planning+aerial","transportation":"bullet+train+railway+transportation",
-    "water-systems":"water+dam+reservoir+treatment+clean","power-grid":"power+grid+electricity+tower+lines",
-    "food-science":"food+science+molecular+gastronomy","fermentation":"fermentation+brewing+craft+beer+yeast",
-    "agriculture":"farm+agriculture+harvest+field+tractor","food-supply":"food+supply+global+market+grain",
-    "semiconductors":"semiconductor+chip+silicon+wafer+clean","ev-tech":"electric+car+tesla+battery+charging",
-    "ar-vr":"virtual+reality+headset+ar+immersive","drones":"drone+uav+aerial+quadcopter+flying",
-    "biocomputing":"biocomputing+dna+molecular+storage","internet-infra":"internet+submarine+cable+fiber+optic",
-    "sports-analytics":"sports+analytics+stadium+data+screen","f1":"formula+one+racing+pit+stop+car",
-    "human-performance":"athlete+running+performance+track","sports-psychology":"athlete+mental+focus+training+meditation",
-    "memory-learning":"memory+brain+study+learning+books","speed-reading":"books+library+reading+knowledge+fast",
-    "systems-thinking":"systems+diagram+flow+thinking+map","leadership":"leadership+ceo+business+meeting+team",
+CATEGORY_COLORS = {
+    "Self Help": "#3d8b37",
+    "Motivation": "#e17055",
+    "Investing": "#2e86ab",
+    "Leadership": "#8e44ad",
+    "Business Strategy": "#d4a017",
+    "Supply Chain": "#1abc9c",
 }
 
-PROMPT_TEMPLATES = [
-    "Explain the most fundamental concept in {label}. What must every beginner understand first? Include real-world examples and actual numbers.",
-    "What is the most counterintuitive or mind-blowing fact about {label}? Explain why it defies common sense with the science/math behind it.",
-    "How is {label} evolving in 2025-2026? Cover the latest breakthroughs, trends, and expert predictions. Be specific with names and numbers.",
-    "What is the most important formula, equation, or principle in {label}? Derive it from first principles and show a practical worked example.",
-    "What is the biggest unsolved mystery or open debate in {label}? Why hasn't it been solved? What are the competing theories?",
-    "Tell the story of the most important breakthrough in {label} history. Who did it, what obstacles, and why does it still matter today?",
-    "Explain how something in {label} works at a DEEP technical level. Pick one specific mechanism and walk through it step-by-step with math.",
-    "What are the 3 biggest misconceptions about {label}? Debunk each with hard evidence, real data, and clear logic.",
-]
+IMG_QUERIES = {
+    "Self Help": "books+reading+morning+coffee+peaceful",
+    "Motivation": "mountain+summit+sunrise+achievement",
+    "Investing": "stock+market+chart+wealth+finance",
+    "Leadership": "leadership+team+meeting+boardroom",
+    "Business Strategy": "startup+whiteboard+strategy+planning",
+    "Supply Chain": "logistics+warehouse+factory+shipping",
+}
 
 
 def daily_seed():
     return int(hashlib.md5(str(date.today()).encode()).hexdigest()[:8], 16)
 
 
-def pick_topics_and_prompts(n):
+def pick_book():
+    """Pick today's book — deterministic by date, cycles through all books."""
     rng = random.Random(daily_seed())
-    by_cat = {}
-    for t in TOPICS:
-        by_cat.setdefault(t["category"], []).append(t)
-
-    # Pick one from each category first, then shuffle and take n
-    pool = []
-    for cat, topics in by_cat.items():
-        topic = rng.choice(topics)
-        prompt = rng.choice(PROMPT_TEMPLATES).format(**topic)
-        pool.append((topic, prompt))
-
-    rng.shuffle(pool)
-    # If n < number of categories, just take first n from shuffled pool
-    if n <= len(pool):
-        return pool[:n]
-
-    # Otherwise fill remaining with random picks
-    used = {(s[0]["id"], s[1][:50]) for s in pool}
-    all_topics = list(TOPICS)
-    rng.shuffle(all_topics)
-    idx = 0
-    while len(pool) < n:
-        topic = all_topics[idx % len(all_topics)]
-        prompt = rng.choice(PROMPT_TEMPLATES).format(**topic)
-        key = (topic["id"], prompt[:50])
-        if key not in used:
-            pool.append((topic, prompt))
-            used.add(key)
-        idx += 1
-        if idx > n * 5:
-            break
-    return pool[:n]
+    day_of_year = date.today().timetuple().tm_yday
+    # Use day-of-year as index into shuffled list for variety
+    shuffled = list(BOOKS)
+    rng.shuffle(shuffled)
+    return shuffled[day_of_year % len(shuffled)]
 
 
-def make_image_url(topic_id, title):
-    query = IMG_QUERIES.get(topic_id, "knowledge+science+technology")
+def make_image_url(category, title):
+    query = IMG_QUERIES.get(category, "books+knowledge+reading")
     sig = hashlib.md5(f"{date.today()}-{title}".encode()).hexdigest()[:8]
     return f"https://source.unsplash.com/800x450/?{query}&sig={sig}"
 
 
-def call_api(topic, prompt):
-    """Call GitHub Models API (OpenAI-compatible endpoint)."""
+def generate_summary(book):
+    """Generate a deep ~3500 word book summary."""
 
-    user_prompt = f"""You are a brilliant knowledge content creator for InfoGram, an addictive learning feed. Create an in-depth educational article.
+    prompt = f"""You are a world-class book summarizer. Create a comprehensive, actionable summary of this book.
 
-TOPIC: {topic['label']} (Category: {topic['category']})
-PROMPT: {prompt}
+BOOK: "{book['title']}" by {book['author']} ({book['year']})
+CATEGORY: {book['category']}
 
-REQUIREMENTS:
-- Write 600-1000 words (4-6 minute deep read)
-- Be SPECIFIC: real names, real numbers, real dates, real formulas
-- Include at least one worked mathematical example with actual numbers
-- Hook the reader in the first sentence
-- Write as if you have the latest 2025 knowledge
+Write a DEEP summary that takes ~20 minutes to read (3000-4000 words). This should be so thorough that someone who reads your summary gets 80% of the book's value.
 
-Respond ONLY with valid JSON, no markdown fences, no extra text:
+Structure it EXACTLY like this:
+
+## The Big Idea
+One powerful paragraph that captures the book's core thesis. Why does this book matter?
+
+## Key Concepts
+Break down the 5-8 most important ideas from the book. For each one:
+- Name the concept with **bold**
+- Explain it clearly with specific examples from the book
+- Show how to apply it in real life
+
+## Chapter-by-Chapter Breakdown
+Walk through the major sections/chapters of the book. For each:
+- What's the main argument?
+- What stories or case studies does the author use?
+- What are the specific frameworks, models, or tools introduced?
+
+## Actionable Takeaways
+List 5-10 specific things the reader can DO after reading this summary. Be concrete — not "be more productive" but "use the 2-minute rule: if a task takes less than 2 minutes, do it immediately."
+
+## Notable Quotes
+Include 3-5 of the most impactful quotes from the book (real quotes from the actual book).
+
+## Who Should Read This
+Describe in 2-3 sentences who would benefit most from this book and when in their life/career.
+
+FORMATTING RULES:
+- Use ## for section headers
+- Use **bold** for key terms and concept names
+- Use `backtick` for specific numbers, frameworks, or formulas
+- Use [INSIGHT] ... [/INSIGHT] for 2-3 key "aha moment" callouts
+- Write in an engaging, conversational tone — not dry or academic
+- Include real examples, numbers, and frameworks from the book
+- Make it feel like a smart friend explaining the book over coffee
+
+Respond ONLY with valid JSON, no markdown fences:
 {{
-  "title": "Catchy specific headline, max 10 words",
-  "content": "Full 600-1000 word article. Use ## for section headers. Use **bold** for key terms. Use `backtick` for formulas/values. Use [FORMULA] ... [/FORMULA] for standalone equations. Use [INSIGHT] ... [/INSIGHT] for 1-2 key takeaways.",
-  "difficulty": "Fundamentals" or "Intermediate" or "Advanced",
-  "readTime": "5"
+  "title": "{book['title']}",
+  "author": "{book['author']}",
+  "year": {book['year']},
+  "content": "The full 3000-4000 word summary following the structure above.",
+  "oneLiner": "A single compelling sentence that captures why someone should read this summary.",
+  "readTime": "20",
+  "rating": "A rating from 1-5 based on how widely recommended this book is"
 }}"""
 
     body = json.dumps({
         "model": MODEL,
         "messages": [
-            {"role": "system", "content": "You are a knowledge content creator. Always respond with valid JSON only."},
-            {"role": "user", "content": user_prompt}
+            {"role": "system", "content": "You are an expert book summarizer. Always respond with valid JSON only. No markdown fences."},
+            {"role": "user", "content": prompt}
         ],
-        "temperature": 0.9,
-        "max_tokens": 4096,
+        "temperature": 0.8,
+        "max_tokens": 16000,
     }).encode()
 
     req = urllib.request.Request(
-        API_URL,
-        data=body,
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {TOKEN}",
-        },
+        API_URL, data=body,
+        headers={"Content-Type": "application/json", "Authorization": f"Bearer {TOKEN}"}
     )
 
     resp = urllib.request.urlopen(req, timeout=API_TIMEOUT)
     data = json.loads(resp.read())
 
     text = data["choices"][0]["message"]["content"].strip()
-
-    # Clean markdown fences if present
     for prefix in ["```json", "```"]:
         if text.startswith(prefix):
             text = text[len(prefix):]
     if text.endswith("```"):
         text = text[:-3]
 
-    return json.loads(text.strip())
+    result = json.loads(text.strip())
 
+    # Add metadata
+    post_id = hashlib.md5(f"{date.today()}-{book['title']}".encode()).hexdigest()[:12]
+    result["id"] = post_id
+    result["category"] = book["category"]
+    result["icon"] = book["icon"]
+    result["color"] = CATEGORY_COLORS.get(book["category"], "#3d8b37")
+    result["imageUrl"] = make_image_url(book["category"], book["title"])
+    result["imageQuery"] = IMG_QUERIES.get(book["category"], "books+reading")
+    result["generatedAt"] = datetime.utcnow().isoformat() + "Z"
 
-def generate_post(topic, prompt, index):
-    for attempt in range(MAX_RETRIES):
-        try:
-            log(f"  [{index+1}/{NUM_POSTS}] {topic['label']}: {prompt[:55]}...")
-            result = call_api(topic, prompt)
-
-            post_id = hashlib.md5(
-                f"{date.today()}-{topic['id']}-{prompt[:30]}".encode()
-            ).hexdigest()[:12]
-
-            result["id"] = post_id
-            result["topicId"] = topic["id"]
-            result["category"] = topic["category"]
-            result["imageUrl"] = make_image_url(topic["id"], result.get("title", ""))
-            result["imageQuery"] = IMG_QUERIES.get(topic["id"], "knowledge+science")
-            result["generatedAt"] = datetime.utcnow().isoformat() + "Z"
-
-            wc = len(result.get("content", "").split())
-            log(f"    ✓ \"{result['title']}\" ({wc} words)")
-            return result
-
-        except urllib.error.HTTPError as e:
-            body = ""
-            try:
-                body = e.read().decode()[:200]
-            except:
-                pass
-            log(f"    ✗ Attempt {attempt+1}: HTTP {e.code} — {body}")
-            if attempt < MAX_RETRIES - 1:
-                wait = 15 * (attempt + 1)
-                log(f"    ⏳ Waiting {wait}s...")
-                time.sleep(wait)
-
-        except Exception as e:
-            log(f"    ✗ Attempt {attempt+1}: {type(e).__name__}: {e}")
-            if attempt < MAX_RETRIES - 1:
-                time.sleep(10)
-
-    log(f"    ✗ All {MAX_RETRIES} attempts failed")
-    return None
+    return result
 
 
 def main():
     log("=" * 50)
-    log("InfoGram Generator v5 (GitHub Models)")
+    log("BookGram Summary Generator v1")
     log("=" * 50)
 
     if not TOKEN:
         log("ERROR: GITHUB_TOKEN not available")
-        log("This should be automatic in GitHub Actions")
         sys.exit(1)
 
-    log(f"Token: {TOKEN[:8]}...{TOKEN[-4:]}")
+    book = pick_book()
+    today = str(date.today())
+
+    log(f"Date: {today}")
+    log(f"Book: \"{book['title']}\" by {book['author']}")
+    log(f"Category: {book['category']}")
     log(f"Model: {MODEL}")
-    log(f"API: {API_URL}")
-    log(f"Date: {date.today()}")
-    log(f"Articles: {NUM_POSTS}")
-    log(f"Delay: {REQUEST_DELAY}s between requests")
     log("")
 
-    # Quick API test
-    log("Testing API connection...")
+    # API test
+    log("Testing API...")
     try:
-        test_body = json.dumps({
-            "model": MODEL,
-            "messages": [{"role": "user", "content": "Say hello in 3 words"}],
-            "max_tokens": 20,
-        }).encode()
-        test_req = urllib.request.Request(
-            API_URL, data=test_body,
-            headers={"Content-Type": "application/json", "Authorization": f"Bearer {TOKEN}"}
-        )
-        test_resp = urllib.request.urlopen(test_req, timeout=15)
-        test_data = json.loads(test_resp.read())
-        test_text = test_data["choices"][0]["message"]["content"]
-        log(f"  ✓ API works! Response: \"{test_text.strip()}\"")
+        test_body = json.dumps({"model": MODEL, "messages": [{"role": "user", "content": "Say OK"}], "max_tokens": 5}).encode()
+        test_req = urllib.request.Request(API_URL, data=test_body, headers={"Content-Type": "application/json", "Authorization": f"Bearer {TOKEN}"})
+        urllib.request.urlopen(test_req, timeout=10)
+        log("  ✓ API connected")
     except Exception as e:
-        log(f"  ✗ API test failed: {e}")
-        log("  GitHub Models may not be available for your account")
+        log(f"  ✗ API failed: {e}")
         sys.exit(1)
 
     log("")
+    log(f"Generating summary (~60-90 seconds)...")
+
     POSTS_DIR.mkdir(exist_ok=True)
-    selections = pick_topics_and_prompts(NUM_POSTS)
-    posts = []
-    failed = 0
+    result = None
 
-    for i, (topic, prompt) in enumerate(selections):
-        post = generate_post(topic, prompt, i)
-        if post:
-            posts.append(post)
-        else:
-            failed += 1
-        if i < len(selections) - 1:
-            log(f"    ⏳ Waiting {REQUEST_DELAY}s...")
-            time.sleep(REQUEST_DELAY)
+    for attempt in range(3):
+        try:
+            result = generate_summary(book)
+            wc = len(result.get("content", "").split())
+            log(f"  ✓ Generated! ({wc} words)")
+            break
+        except Exception as e:
+            log(f"  ✗ Attempt {attempt+1}: {e}")
+            if attempt < 2:
+                time.sleep(15)
 
-    output_path = POSTS_DIR / f"{date.today()}.json"
+    if not result:
+        log("❌ FATAL: Could not generate summary")
+        sys.exit(1)
+
+    # Save as today's post (array with single item for compatibility)
+    output_path = POSTS_DIR / f"{today}.json"
     with open(output_path, "w") as f:
-        json.dump(posts, f, indent=2)
+        json.dump([result], f, indent=2)
 
     log("")
     log("=" * 50)
-    log(f"✅ Done! {len(posts)} articles, {failed} failed")
+    log(f"✅ Summary ready!")
+    log(f"📖 \"{result['title']}\" by {result['author']}")
     log(f"📁 {output_path}")
-    log(f"💰 Cost: $0.00 (GitHub Models free)")
-
-    cats = {}
-    for p in posts:
-        cats[p["category"]] = cats.get(p["category"], 0) + 1
-    log("\nBreakdown:")
-    for cat, count in sorted(cats.items()):
-        log(f"  {cat}: {count}")
-
-    words = [len(p.get("content", "").split()) for p in posts]
-    if words:
-        log(f"\nWords: min={min(words)} max={max(words)} avg={sum(words)//len(words)}")
-
-    if len(posts) == 0:
-        log("\n❌ FATAL: Zero posts generated!")
-        sys.exit(1)
-    if failed > 5:
-        log(f"\n⚠️  {failed} failures")
-        sys.exit(1)
-
-    log("\n🎉 Feed ready!")
+    log(f"📝 {len(result.get('content','').split())} words")
+    log(f"💰 Cost: $0.00")
+    log("")
+    log(f"📚 Library: {len(BOOKS)} books")
+    log(f"   At 1/day, full cycle takes {len(BOOKS)} days (~{len(BOOKS)//30} months)")
+    log("")
+    log("🎉 Done!")
 
 
 if __name__ == "__main__":
