@@ -232,13 +232,14 @@ def daily_seed():
 
 
 def pick_book():
-    """Pick today's book — deterministic by date, cycles through all books."""
-    rng = random.Random(daily_seed())
+    """Pick today's book. Uses day-of-year as index — deterministic, cycles through all books.
+    Books are in curated order: the library list itself IS the priority order.
+    Most iconic books are listed first in each category."""
     day_of_year = date.today().timetuple().tm_yday
-    # Use day-of-year as index into shuffled list for variety
-    shuffled = list(BOOKS)
-    rng.shuffle(shuffled)
-    return shuffled[day_of_year % len(shuffled)]
+    year = date.today().year
+    # Offset by year so the cycle shifts each year
+    idx = (day_of_year + year * 7) % len(BOOKS)
+    return BOOKS[idx]
 
 
 def make_image_url(category, title):
@@ -248,68 +249,50 @@ def make_image_url(category, title):
 
 
 def generate_summary(book):
-    """Generate a deep ~3500 word book summary."""
+    """Generate a deep ~3500 word book summary. Title/author are hardcoded — AI only writes the content."""
 
-    prompt = f"""You are a world-class book summarizer. Create a comprehensive, actionable summary of this book.
+    prompt = f"""Summarize the book "{book['title']}" by {book['author']} (published {book['year']}).
 
-BOOK: "{book['title']}" by {book['author']} ({book['year']})
-CATEGORY: {book['category']}
+CRITICAL: This is a summary of the SPECIFIC book "{book['title']}" by {book['author']}. Do NOT summarize a different book. Do NOT invent a book. If you are unsure about the book, still do your best to summarize "{book['title']}" by {book['author']}. Use real content, examples, and frameworks from this exact book.
 
-Write a DEEP summary that takes ~20 minutes to read (3000-4000 words). This should be so thorough that someone who reads your summary gets 80% of the book's value.
+Write a DEEP summary (3000-4000 words, ~20 minute read). Someone reading this should get 80% of the book's value.
 
-Structure it EXACTLY like this:
+STRUCTURE (follow exactly):
 
 ## The Big Idea
-One powerful paragraph that captures the book's core thesis. Why does this book matter?
+One powerful paragraph: what is this book's core thesis? Why does it matter?
 
 ## Key Concepts
-Break down the 5-8 most important ideas from the book. For each one:
-- Name the concept with **bold**
-- Explain it clearly with specific examples from the book
-- Show how to apply it in real life
+The 5-8 most important ideas. For each: name it in **bold**, explain with specific examples FROM THE BOOK, show real-life application.
 
 ## Chapter-by-Chapter Breakdown
-Walk through the major sections/chapters of the book. For each:
-- What's the main argument?
-- What stories or case studies does the author use?
-- What are the specific frameworks, models, or tools introduced?
+Walk through the major parts/chapters. What's each section's argument? What stories, case studies, frameworks does the author use?
 
 ## Actionable Takeaways
-List 5-10 specific things the reader can DO after reading this summary. Be concrete — not "be more productive" but "use the 2-minute rule: if a task takes less than 2 minutes, do it immediately."
+5-10 specific, concrete actions. Not vague ("be better") but specific ("use the 2-minute rule: if it takes less than 2 minutes, do it now").
 
 ## Notable Quotes
-Include 3-5 of the most impactful quotes from the book (real quotes from the actual book).
+3-5 real quotes from the actual book "{book['title']}". These must be real quotes from this book.
 
 ## Who Should Read This
-Describe in 2-3 sentences who would benefit most from this book and when in their life/career.
+2-3 sentences on who benefits most and when.
 
-FORMATTING RULES:
-- Use ## for section headers
-- Use **bold** for key terms and concept names
-- Use `backtick` for specific numbers, frameworks, or formulas
-- Use [INSIGHT] ... [/INSIGHT] for 2-3 key "aha moment" callouts
-- Write in an engaging, conversational tone — not dry or academic
-- Include real examples, numbers, and frameworks from the book
-- Make it feel like a smart friend explaining the book over coffee
+FORMAT RULES: Use ## for headers. **bold** for key terms. `backtick` for numbers/frameworks. [INSIGHT] ... [/INSIGHT] for 2-3 key "aha" callouts. Conversational tone, not academic.
 
-Respond ONLY with valid JSON, no markdown fences:
+Respond with ONLY a JSON object (no markdown fences, no extra text):
 {{
-  "title": "{book['title']}",
-  "author": "{book['author']}",
-  "year": {book['year']},
-  "content": "The full 3000-4000 word summary following the structure above.",
-  "oneLiner": "A single compelling sentence that captures why someone should read this summary.",
-  "readTime": "20",
-  "rating": "A rating from 1-5 based on how widely recommended this book is"
+  "content": "The full 3000-4000 word summary",
+  "oneLiner": "One compelling sentence about why to read this book",
+  "rating": "4.5"
 }}"""
 
     body = json.dumps({
         "model": MODEL,
         "messages": [
-            {"role": "system", "content": "You are an expert book summarizer. Always respond with valid JSON only. No markdown fences."},
+            {"role": "system", "content": f"You are summarizing the book \"{book['title']}\" by {book['author']}. Respond with valid JSON only. No markdown fences. No preamble."},
             {"role": "user", "content": prompt}
         ],
-        "temperature": 0.8,
+        "temperature": 0.7,
         "max_tokens": 16000,
     }).encode()
 
@@ -328,17 +311,25 @@ Respond ONLY with valid JSON, no markdown fences:
     if text.endswith("```"):
         text = text[:-3]
 
-    result = json.loads(text.strip())
+    ai_result = json.loads(text.strip())
 
-    # Add metadata
-    post_id = hashlib.md5(f"{date.today()}-{book['title']}".encode()).hexdigest()[:12]
-    result["id"] = post_id
-    result["category"] = book["category"]
-    result["icon"] = book["icon"]
-    result["color"] = CATEGORY_COLORS.get(book["category"], "#3d8b37")
-    result["imageUrl"] = make_image_url(book["category"], book["title"])
-    result["imageQuery"] = IMG_QUERIES.get(book["category"], "books+reading")
-    result["generatedAt"] = datetime.utcnow().isoformat() + "Z"
+    # HARDCODE book metadata — never trust the AI for these
+    result = {
+        "id": hashlib.md5(f"{date.today()}-{book['title']}".encode()).hexdigest()[:12],
+        "title": book["title"],
+        "author": book["author"],
+        "year": book["year"],
+        "category": book["category"],
+        "icon": book["icon"],
+        "color": CATEGORY_COLORS.get(book["category"], "#3d8b37"),
+        "content": ai_result.get("content", ""),
+        "oneLiner": ai_result.get("oneLiner", f"A must-read book on {book['category'].lower()}."),
+        "readTime": "20",
+        "rating": ai_result.get("rating", "4.5"),
+        "imageUrl": make_image_url(book["category"], book["title"]),
+        "imageQuery": IMG_QUERIES.get(book["category"], "books+reading"),
+        "generatedAt": datetime.utcnow().isoformat() + "Z",
+    }
 
     return result
 
