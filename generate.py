@@ -249,84 +249,107 @@ def make_image_url(category, title):
 
 
 def generate_summary(book):
-    """Generate a deep ~3500 word book summary. Title/author are hardcoded — AI only writes the content."""
+    """Generate a deep book summary. AI returns plain formatted text — we handle the JSON wrapping."""
 
-    prompt = f"""Summarize the book "{book['title']}" by {book['author']} (published {book['year']}).
+    prompt = f"""Write a comprehensive summary of the book "{book['title']}" by {book['author']} (published {book['year']}).
 
-CRITICAL: This is a summary of the SPECIFIC book "{book['title']}" by {book['author']}. Do NOT summarize a different book. Do NOT invent a book. If you are unsure about the book, still do your best to summarize "{book['title']}" by {book['author']}. Use real content, examples, and frameworks from this exact book.
+IMPORTANT: You are summarizing the SPECIFIC book "{book['title']}" by {book['author']}. Do NOT summarize any other book. Use real content, stories, examples, and frameworks from this exact book.
 
-Write a DEEP summary (3000-4000 words, ~20 minute read). Someone reading this should get 80% of the book's value.
+Write 3000-4000 words (~20 minute read). Someone reading this should get 80% of the book's value without reading the actual book.
 
-STRUCTURE (follow exactly):
+Write it as a flowing, engaging article using this structure:
 
 ## The Big Idea
-One powerful paragraph: what is this book's core thesis? Why does it matter?
+
+Start with one powerful paragraph that hooks the reader. What is this book really about? Why has it impacted millions of people? Set up the core thesis in a way that makes someone want to keep reading.
 
 ## Key Concepts
-The 5-8 most important ideas. For each: name it in **bold**, explain with specific examples FROM THE BOOK, show real-life application.
 
-## Chapter-by-Chapter Breakdown
-Walk through the major parts/chapters. What's each section's argument? What stories, case studies, frameworks does the author use?
+Cover the 5-8 most important ideas from the book. For each concept:
+- Give it a clear name in **bold**
+- Explain it in 2-3 paragraphs using specific stories and examples FROM THE BOOK
+- End with a practical "How to apply this" sentence
 
-## Actionable Takeaways
-5-10 specific, concrete actions. Not vague ("be better") but specific ("use the 2-minute rule: if it takes less than 2 minutes, do it now").
+Make each concept feel like a mini-lesson. Use the author's own stories, analogies, and case studies — not generic advice.
 
-## Notable Quotes
-3-5 real quotes from the actual book "{book['title']}". These must be real quotes from this book.
+## The Journey Through the Book
 
-## Who Should Read This
-2-3 sentences on who benefits most and when.
+Walk through the book's narrative arc or major sections. What happens? What does the author argue? What memorable stories does the author tell? What frameworks or models are introduced?
 
-FORMAT RULES: Use ## for headers. **bold** for key terms. `backtick` for numbers/frameworks. [INSIGHT] ... [/INSIGHT] for 2-3 key "aha" callouts. Conversational tone, not academic.
+Write this as flowing prose, not a dry chapter list. Make the reader feel like they're experiencing the book's key moments.
 
-Respond with ONLY a JSON object (no markdown fences, no extra text):
-{{
-  "content": "The full 3000-4000 word summary",
-  "oneLiner": "One compelling sentence about why to read this book",
-  "rating": "4.5"
-}}"""
+## Put It Into Practice
 
-    body = json.dumps({
+Give 7-10 specific, concrete actions someone can take TODAY after reading this summary. Each one should be:
+- Specific (not "be more disciplined" but "wake up 30 minutes earlier tomorrow and spend that time on your most important goal")
+- Actionable (something you can do this week)
+- Tied to a concept from the book
+
+## Words Worth Remembering
+
+Share 4-5 of the most powerful quotes from "{book['title']}". For each quote, add one sentence explaining why it matters. Use the actual words from the book.
+
+## Who This Book Is For
+
+End with 2-3 sentences about who would benefit most from reading this book and at what point in their life or career.
+
+FORMATTING — This is critical, follow exactly:
+- Use ## for section headers (exactly as shown above)
+- Use **bold** for concept names and key terms
+- Use `backtick` for specific numbers, rules, or named frameworks
+- Write [INSIGHT] before a key "aha moment" paragraph and [/INSIGHT] after it (use this 2-3 times for the most powerful ideas)
+- Write in a warm, conversational tone — like a smart friend explaining the book over coffee
+- Use short paragraphs (2-4 sentences each) for easy reading
+- NO bullet points or numbered lists in the Key Concepts section — write in flowing paragraphs
+- Bullet points are OK in the "Put It Into Practice" section only
+
+Write ONLY the summary text. No JSON. No markdown fences. No preamble like "Here is the summary." Just start directly with ## The Big Idea"""
+
+    # FIRST CALL: Get the summary text
+    body1 = json.dumps({
         "model": MODEL,
         "messages": [
-            {"role": "system", "content": f"You are summarizing the book \"{book['title']}\" by {book['author']}. Respond with valid JSON only. No markdown fences. No preamble."},
+            {"role": "system", "content": f"You are writing a book summary of \"{book['title']}\" by {book['author']}. Write only the summary text. No JSON. No preamble."},
             {"role": "user", "content": prompt}
         ],
         "temperature": 0.7,
         "max_tokens": 16000,
     }).encode()
 
-    req = urllib.request.Request(
-        API_URL, data=body,
-        headers={"Content-Type": "application/json", "Authorization": f"Bearer {TOKEN}"}
-    )
+    req1 = urllib.request.Request(API_URL, data=body1, headers={"Content-Type": "application/json", "Authorization": f"Bearer {TOKEN}"})
+    resp1 = urllib.request.urlopen(req1, timeout=API_TIMEOUT)
+    data1 = json.loads(resp1.read())
+    content = data1["choices"][0]["message"]["content"].strip()
 
-    resp = urllib.request.urlopen(req, timeout=API_TIMEOUT)
-    data = json.loads(resp.read())
+    # Clean any accidental markdown fences
+    if content.startswith("```"):
+        content = content.split("\n", 1)[1] if "\n" in content else content[3:]
+    if content.endswith("```"):
+        content = content[:-3].strip()
 
-    text = data["choices"][0]["message"]["content"].strip()
-    for prefix in ["```json", "```"]:
-        if text.startswith(prefix):
-            text = text[len(prefix):]
-    if text.endswith("```"):
-        text = text[:-3]
+    log(f"  ✓ Summary generated ({len(content.split())} words)")
 
-    ai_result = json.loads(text.strip())
+    # SECOND CALL: Get a one-liner (short, cheap call)
+    body2 = json.dumps({
+        "model": MODEL,
+        "messages": [
+            {"role": "user", "content": f"Write ONE compelling sentence (max 20 words) about why someone should read \"{book['title']}\" by {book['author']}. Just the sentence, nothing else."}
+        ],
+        "temperature": 0.8,
+        "max_tokens": 100,
+    }).encode()
 
-    # Force content to be a string — AI sometimes returns nested objects
-    content = ai_result.get("content", "")
-    if not isinstance(content, str):
-        content = json.dumps(content) if content else ""
+    req2 = urllib.request.Request(API_URL, data=body2, headers={"Content-Type": "application/json", "Authorization": f"Bearer {TOKEN}"})
+    try:
+        resp2 = urllib.request.urlopen(req2, timeout=15)
+        data2 = json.loads(resp2.read())
+        oneLiner = data2["choices"][0]["message"]["content"].strip().strip('"').strip("'")
+    except:
+        oneLiner = f"A transformative book on {book['category'].lower()} that will change how you think."
 
-    oneLiner = ai_result.get("oneLiner", f"A must-read book on {book['category'].lower()}.")
-    if not isinstance(oneLiner, str):
-        oneLiner = str(oneLiner)
+    log(f"  ✓ One-liner: \"{oneLiner[:60]}...\"")
 
-    rating = ai_result.get("rating", "4.5")
-    if not isinstance(rating, str):
-        rating = str(rating)
-
-    # HARDCODE book metadata — never trust the AI for these
+    # Build final result with HARDCODED metadata
     result = {
         "id": hashlib.md5(f"{date.today()}-{book['title']}".encode()).hexdigest()[:12],
         "title": book["title"],
@@ -338,7 +361,7 @@ Respond with ONLY a JSON object (no markdown fences, no extra text):
         "content": content,
         "oneLiner": oneLiner,
         "readTime": "20",
-        "rating": rating,
+        "rating": "4.5",
         "imageUrl": make_image_url(book["category"], book["title"]),
         "imageQuery": IMG_QUERIES.get(book["category"], "books+reading"),
         "generatedAt": datetime.utcnow().isoformat() + "Z",
@@ -385,12 +408,11 @@ def main():
     for attempt in range(3):
         try:
             result = generate_summary(book)
-            wc = len(result.get("content", "").split())
-            log(f"  ✓ Generated! ({wc} words)")
             break
         except Exception as e:
-            log(f"  ✗ Attempt {attempt+1}: {e}")
+            log(f"  ✗ Attempt {attempt+1}: {type(e).__name__}: {e}")
             if attempt < 2:
+                log(f"  ⏳ Retrying in 15s...")
                 time.sleep(15)
 
     if not result:
